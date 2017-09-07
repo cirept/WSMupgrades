@@ -103,7 +103,8 @@
     var $applyAutofills = jQuery('<button>').attr({
         'type': 'button',
         'class': 'applyAutofills',
-    }).html('<i class="fa space-shuttle"></i> apply autofills');
+        'title': 'apply autofills',
+    }).html('<i class="fal fa-magic fa-2x"></i>');
 
     var $minimizeList = jQuery('<button>').attr({
         'type': 'button',
@@ -256,7 +257,7 @@
             var el = document.createElement('li');
             el.classList.add('autofillEntry');
 
-            el.innerHTML = '<span class="my-handle" title="drag to re-order">[ == ]</span><div class="autofillTag">' + autofillTag + '</div><input class="regEx" type="text" title="enter search string"> <i class="js-remove" title="click to remove"> ✖ </i>';
+            el.innerHTML = '<span class="my-handle" title="drag to re-order"><i class="fal fa-sort"></i></span><div class="autofillTag">' + autofillTag + '</div><input class="regEx" type="text" title="enter search string"> <i class="js-remove" title="click to remove"> ✖ </i>';
             var $autofillOptionsList = jQuery('#autofillOptions');
 
             $autofillOptionsList.append(el);
@@ -274,8 +275,8 @@
      */
     function buildAutofillOptions($autofillOptionsList) {
 
-//        let key = '';
-//        let value = '';
+        //        let key = '';
+        //        let value = '';
 
         var regReplace = getFromLocalStorage();
 
@@ -288,7 +289,7 @@
             // loop through Legend Content list
             for (let key in regReplace) {
                 if (regReplace.hasOwnProperty(key)) {
-//                    let value = regReplace[key];
+                    //                    let value = regReplace[key];
 
                     let secondArray = regReplace[key];
 
@@ -305,7 +306,7 @@
                         let $grabHandle = jQuery('<span>').attr({
                             'class': 'my-handle',
                             'title': 'drag to re-order',
-                        }).text('[ == ]');
+                        }).html('<i class="fal fa-sort"></i>');
 
                         let $label = jQuery('<div>').attr({
                             'class': 'autofillTag',
@@ -341,7 +342,7 @@
 
             for (let key3 in regReplace) {
                 if (regReplace.hasOwnProperty(key3)) {
-//                    value = regReplace[key3];
+                    //                    value = regReplace[key3];
 
                     // build elements
                     let $listItem = jQuery('<li>').attr({
@@ -353,7 +354,7 @@
                     let $grabHandle = jQuery('<span>').attr({
                         'class': 'my-handle',
                         'title': 'drag to re-order',
-                    }).text(' == ');
+                    }).html('<i class="fal fa-sort"></i>');
 
                     let $label = jQuery('<div>').attr({
                         'class': 'autofillTag',
@@ -379,8 +380,8 @@
     }
 
     /**
-    * css styles for tool
-    */
+     * css styles for tool
+     */
     const $myStyles = jQuery('<style>').attr({
         'type': 'text/css',
     }).text(`
