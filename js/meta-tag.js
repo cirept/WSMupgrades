@@ -19,9 +19,15 @@
     });
     var $fonts2 = jQuery('<link>').attr({
         'rel': 'stylesheet',
+        'id': 'awesome-light',
+        'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-solid.css',
+    });
+    var $fonts3 = jQuery('<link>').attr({
+        'rel': 'stylesheet',
         'id': 'awesome-core',
         'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-core.css',
     });
     jQuery('head').append($fonts);
     jQuery('head').append($fonts2);
+    jQuery('head').append($fonts3);
 })();

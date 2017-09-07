@@ -98,18 +98,20 @@
     var $button = jQuery('<button>').attr({
         'id': 'addAutofill',
         'value': 'addAutofill',
-    }).text('Add Autofill');
+        'title':'Add Autofill',
+    }).html('<i class="fas fa-plus fa-lg"></i>');
 
     var $applyAutofills = jQuery('<button>').attr({
         'type': 'button',
         'class': 'applyAutofills',
         'title': 'apply autofills',
-    }).html('<i class="fal fa-magic fa-2x"></i>');
+    }).html('<i class="fal fa-magic fa-lg"></i>');
 
     var $minimizeList = jQuery('<button>').attr({
         'type': 'button',
         'class': 'minimizeList',
-    }).text('toggle list');
+        'title':'toggle list',
+    }).html('<i class="fal fa-user-secret fa-lg"></i>');
 
     $autofillOptions.append($autofillOptionsList);
 
@@ -257,7 +259,7 @@
             var el = document.createElement('li');
             el.classList.add('autofillEntry');
 
-            el.innerHTML = '<span class="my-handle" title="drag to re-order"><i class="fal fa-sort"></i></span><div class="autofillTag">' + autofillTag + '</div><input class="regEx" type="text" title="enter search string"> <i class="js-remove" title="click to remove"> ✖ </i>';
+            el.innerHTML = '<span class="my-handle" title="drag to re-order"><i class="fas fa-sort"></i></span><div class="autofillTag">' + autofillTag + '</div><input class="regEx" type="text" title="enter search string"> <i class="fas fa-times fa-lg js-remove" title="click to remove"></i>';
             var $autofillOptionsList = jQuery('#autofillOptions');
 
             $autofillOptionsList.append(el);
@@ -306,7 +308,7 @@
                         let $grabHandle = jQuery('<span>').attr({
                             'class': 'my-handle',
                             'title': 'drag to re-order',
-                        }).html('<i class="fal fa-sort"></i>');
+                        }).html('<i class="fas fa-sort"></i>');
 
                         let $label = jQuery('<div>').attr({
                             'class': 'autofillTag',
@@ -320,9 +322,9 @@
                         });
 
                         let $removeMe = jQuery('<i>').attr({
-                            'class': 'js-remove',
+                            'class': 'fas fa-times fa-lg js-remove',
                             'title': 'click to remove',
-                        }).text(' ✖ ');
+                        });
 
                         // build list item
                         $listItem.append($grabHandle).append($label).append($myInput).append($removeMe);
@@ -354,7 +356,7 @@
                     let $grabHandle = jQuery('<span>').attr({
                         'class': 'my-handle',
                         'title': 'drag to re-order',
-                    }).html('<i class="fal fa-sort"></i>');
+                    }).html('<i class="fas fa-sort"></i>');
 
                     let $label = jQuery('<div>').attr({
                         'class': 'autofillTag',
@@ -368,9 +370,9 @@
                     });
 
                     let $removeMe = jQuery('<i>').attr({
-                        'class': 'js-remove',
+                        'class': 'fas fa-times fa-lg js-remove',
                         'title': 'click to remove',
-                    }).text(' ✖ ');
+                    });
 
                     // attach to legend list
                     $autofillOptionsList.append($listItem.append($grabHandle).append($label).append($myInput).append($removeMe));
@@ -411,6 +413,8 @@
 }
 
 .my-handle {
+    border: 1px dotted rgb(255, 255, 255);
+    padding: 2px 6px 2px 5px;
     cursor: move;
     cursor: -webkit-grabbing;
 }
@@ -423,7 +427,7 @@
 }
 
 .regEx {
-    background: rgba(0, 0, 0, 0);
+    background: rgb(109, 213, 237);
     border: 1px solid rgb(255, 255, 255);
     line-height: 1.25rem;
     text-indent: 10px;
@@ -432,11 +436,14 @@
 .autofillEntry {
     width: auto;
     padding: 5px 10px;
+    border: 1px solid rgb(255, 255, 255);
+    margin: 10px;
 }
 
 .js-remove {
     cursor: pointer;
     cursor: hand;
+    padding: 0 0 0 10px;
 }
 `);
     jQuery('head').append($myStyles);
