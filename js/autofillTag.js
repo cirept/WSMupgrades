@@ -40,6 +40,8 @@
 
     $wsmEditerTools.append($minimizeList).append($applyAutofills).append($autofillOptions);
 
+    $autofillOptions.hide();
+
     jQuery('.wsmMainHeader').append($wsmEditerTools);
 
     $applyAutofills.on('click', function () {
@@ -416,6 +418,21 @@
         saveState();
 
     };
+
+    /**
+     * read data from json file
+     */
+    function readJson() {
+        var autofillURL = 'https://rawgit.com/cirept/WSMupgrades/master/json/autofillTags.json';
+        var jsonMe;
+        jQuery.getJSON(autofillURL, function (data) {
+            console.log(data);
+            jsonMe = data.autofill;
+        });
+        console.log(jsonMe);
+    }
+
+    readJson();
 
     /**
      * css styles for tool
