@@ -15,7 +15,7 @@
     var $fonts = jQuery('<link>').attr({
         'rel': 'stylesheet',
         'id': 'awesome-light',
-        'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-light.css',
+        'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/091c262ed1b9fe99a823b928a55dcd7de60f141f/css/font-awesome-light.css',
     });
     var $fonts2 = jQuery('<link>').attr({
         'rel': 'stylesheet',
