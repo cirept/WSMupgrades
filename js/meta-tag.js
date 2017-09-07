@@ -14,7 +14,14 @@
     'use strict';
     var $fonts = jQuery('<link>').attr({
         'rel': 'stylesheet',
+        'id': 'awesome-light',
         'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-light.css',
     });
+    var $fonts2 = jQuery('<link>').attr({
+        'rel': 'stylesheet',
+        'id': 'awesome-core',
+        'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-core.css',
+    });
     jQuery('head').append($fonts);
+    jQuery('head').append($fonts2);
 })();
