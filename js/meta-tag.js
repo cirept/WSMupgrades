@@ -11,5 +11,10 @@
 // ==/UserScript==
 
 (function () {
-    jQuery('head');
-})()
+    'use strict';
+    var $fonts = jQuery('<link>').attr({
+        'rel': 'stylesheet',
+        'href': 'https://cdn.rawgit.com/cirept/WSMupgrades/master/css/font-awesome-light.css',
+    });
+    jQuery('head').append($fonts);
+})();
