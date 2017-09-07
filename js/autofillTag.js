@@ -103,7 +103,7 @@
     var $applyAutofills = jQuery('<button>').attr({
         'type': 'button',
         'class': 'applyAutofills',
-    }).html('<i class="fa fa-user"></i> apply autofills');
+    }).html('<i class="fa space-shuttle"></i> apply autofills');
 
     var $minimizeList = jQuery('<button>').attr({
         'type': 'button',

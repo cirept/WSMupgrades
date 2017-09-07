@@ -9,3 +9,7 @@
 // @grant GM_listValues
 // @author cire
 // ==/UserScript==
+
+(function () {
+    jQuery('head');
+})()
