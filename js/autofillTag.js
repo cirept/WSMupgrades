@@ -1,116 +1,39 @@
-/*global document */
+/*global document, location, localStorage, Sortable, NodeFilter */
 
 (function () {
     'use strict';
 
     // ----------------------------------------
-    // use autofills
-    // ----------------------------------------
-    function autofills() {
-        var contentFrame = jQuery('iframe#cblt_content').contents();
-        var siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
-        var viewerIframe = siteEditorIframe.find('iframe#viewer').contents();
-
-        // return only elements that have children
-        var myChild = viewerIframe.find('body').children().filter(function (index, value) {
-            if (value.children.length !== 0) {
-                return this;
-            }
-        });
-
-        let regReplace = getFromLocalStorage();
-        console.log(regReplace[0]);
-        useAutofillTags(myChild, regReplace[0]);
-    }
-
-    /**
-     * loop through word list array and replace text with autofill tags
-     * @param {object} baseElem - base element to find and replace text with autofill tags
-     * @param {array} regReplace - object array that contains the regExpressions and corresponding autofill tags
-     */
-    function useAutofillTags(baseElem, regReplace) {
-        for (let z = 0; z < baseElem.length; z += 1) {
-            // get all visible text on page
-            var wordList = treeWalk(baseElem[z]);
-
-            wordList.forEach(function (n) {
-                var text = n.nodeValue;
-
-                // iterate through autofill array and replace matches in text
-                // replace all instances of 'findMe' with 'autofillTag'
-                for (let autofillTag in regReplace) {
-
-                    let findMe = regReplace[autofillTag];
-
-                    if (findMe.indexOf('`') > -1) {
-                        let findArray = findMe.split('`');
-                        for (let a = 0; a < findArray.length; a += 1) {
-                            let myRegex = new RegExp(findArray[a], 'gi');
-
-                            text = text.replace(myRegex, autofillTag);
-                        }
-
-                    } else {
-
-                        let myRegex = new RegExp(findMe, 'gi');
-
-                        text = text.replace(myRegex, autofillTag);
-                    }
-                }
-
-                n.nodeValue = text;
-            });
-        }
-    }
-
-    /**
-     * create treewalker to navigate DOM and return all TEXT nodes
-     * @param {object} base - base element to crawl for text nodes
-     * @return {array} wordArray - array containing all text nodes on the page
-     */
-    function treeWalk(base) {
-        var treeWalker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, null, false);
-        var wordArray = [];
-
-        while (treeWalker.nextNode()) {
-            if (treeWalker.currentNode.nodeType === 3 && treeWalker.currentNode.textContent.trim() !== '') {
-                wordArray.push(treeWalker.currentNode);
-            }
-        }
-        return wordArray;
-    }
-
-    // ----------------------------------------
     // autofill menu
     // ----------------------------------------
-    var $wsmEditerTools = jQuery('<div>').attr({
+    let $wsmEditerTools = jQuery('<div>').attr({
         'class': 'customEditorTools',
     });
 
-    var $autofillOptions = jQuery('<div>').attr({
+    let $autofillOptions = jQuery('<div>').attr({
 
     });
 
-    var $autofillOptionsList = jQuery('<ul>').attr({
+    let $autofillOptionsList = jQuery('<ul>').attr({
         'id': 'autofillOptions',
     });
 
-    var $button = jQuery('<button>').attr({
+    let $button = jQuery('<button>').attr({
         'id': 'addAutofill',
         'value': 'addAutofill',
-        'title':'Add Autofill',
+        'title': 'Add Autofill',
     }).html('<i class="fas fa-plus fa-lg"></i>');
 
-    var $applyAutofills = jQuery('<button>').attr({
+    let $applyAutofills = jQuery('<button>').attr({
         'type': 'button',
         'class': 'applyAutofills',
         'title': 'apply autofills',
     }).html('<i class="fal fa-magic fa-lg"></i>');
 
-    var $minimizeList = jQuery('<button>').attr({
+    let $minimizeList = jQuery('<button>').attr({
         'type': 'button',
         'class': 'minimizeList',
-        'title':'toggle list',
+        'title': 'toggle list',
     }).html('<i class="fal fa-user-secret fa-lg"></i>');
 
     $autofillOptions.append($autofillOptionsList);
@@ -132,158 +55,16 @@
     buildAutofillOptions($autofillOptionsList);
 
     /**
-     * creating an array of the autofill list options to store into memory
-     * return {object} myObj - returns object array of autofill entries in list
-     */
-    function createArray() {
-        const autofillList = jQuery('#autofillOptions li');
-        const myObj = [];
-        let saveAutofill = {};
-        let autofillTag = '';
-        let myRegex = '';
-        let $myThis;
-
-        for (let z = 0; z < autofillList.length; z += 1) {
-
-            $myThis = jQuery(autofillList[z]);
-            autofillTag = $myThis.find('.autofillTag').text();
-            myRegex = typeof $myThis.find('.regEx').val() === 'undefined' ? '' : $myThis.find('.regEx').val(); // add validation checker to this value
-
-            saveAutofill[autofillTag] = myRegex;
-        }
-
-        myObj.push(saveAutofill);
-
-        return myObj;
-    }
-
-    /**
-     * save current state of the list
-     * @param {paramType} paramDescription
-     */
-    function saveState() {
-        sortable.save();
-        saveToLocalStorage(createArray());
-    }
-    /**
-     * save object to local storage
-     * @param {object} obj - object to be saved into local storage
-     */
-    function saveToLocalStorage(myObj) {
-        var saveMe = JSON.stringify(myObj);
-        localStorage.setItem('autofillVariables', saveMe);
-    }
-
-    /**
-     * retrive object from local storage
-     * @param {object} obj - object to be saved into local storage
-     */
-    function getFromLocalStorage() {
-        return JSON.parse(localStorage.getItem('autofillVariables'));
-    }
-
-    // ----------------------------------------
-    // sortable object
-    // ----------------------------------------
-    var el = document.getElementById('autofillOptions');
-
-    var sortable = Sortable.create(el, {
-        'group': 'autofillList',
-        'handle': '.my-handle',
-        'animation': 150,
-        'store': {
-            /**
-             * Get the order of elements. Called once during initialization.
-             * @param   {Sortable}  sortable
-             * @returns {Array}
-             */
-            get: function (sortable) {
-                var order = localStorage.getItem(sortable.options.group.name);
-                return order ? order.split('|') : [];
-            },
-
-            /**
-             * Save the order of elements. Called onEnd (when the item is dropped).
-             * @param {Sortable}  sortable
-             */
-            set: function (sortable) {
-
-                if (typeof (Storage) !== 'undefined') {
-                    var order = sortable.toArray();
-                    localStorage.setItem(sortable.options.group.name, order.join('|'));
-                } else {
-                    // Sorry! No Web Storage support..
-                }
-            }
-        },
-        'filter': '.js-remove',
-        'onFilter': function (evt) {
-            var item = evt.item,
-                ctrl = evt.target;
-
-            if (Sortable.utils.is(ctrl, '.js-remove')) { // Click on remove button
-                item.parentNode.removeChild(item); // remove sortable item
-
-                saveState();
-            }
-        },
-        // Called by any change to the list (add / update / remove)
-        'onSort': function ( /**Event*/ evt) {
-
-            // Save state
-            saveState();
-
-            // same properties as onUpdate
-        },
-    });
-
-    /**
-     * will bind all new option list with a on text change listener
-     * @param {element} el - new autofill list option
-     */
-    function bindTextChangeListener(el) {
-        jQuery(el).find('input').on('change', function (e) {
-            console.log(e);
-
-            saveState();
-        })
-    }
-
-    document.getElementById('addAutofill').onclick = function () {
-        var autofillTag = prompt('Enter autofill tag for the new feild.', '%DEALERNAME%');
-
-        if (autofillTag === null || autofillTag === '') {
-            alert('please enter an autofill tag');
-        } else {
-
-            var el = document.createElement('li');
-            el.classList.add('autofillEntry');
-
-            el.innerHTML = '<span class="my-handle" title="drag to re-order"><i class="fas fa-sort"></i></span><div class="autofillTag">' + autofillTag + '</div><input class="regEx" type="text" title="enter search string"> <i class="fas fa-times fa-lg js-remove" title="click to remove"></i>';
-            var $autofillOptionsList = jQuery('#autofillOptions');
-
-            $autofillOptionsList.append(el);
-            bindTextChangeListener(el);
-        }
-
-        saveState();
-
-    };
-
-    /**
      * will construct the autofill display area.
      * Will use data in local storage, if it exists
      * @para {OBJECT ARRAY} $autofillOptionsList - autofill container div
      */
-    function buildAutofillOptions($autofillOptionsList) {
+    function buildAutofillOptions(optionsList) {
 
-        //        let key = '';
-        //        let value = '';
-
-        var regReplace = getFromLocalStorage();
+        let regReplace = getFromLocalStorage();
 
         // attach 'add button'
-        $autofillOptionsList.after($button);
+        optionsList.after($button);
 
         // build autofill list options IF there is a list that already exists
         if (regReplace) {
@@ -291,7 +72,6 @@
             // loop through Legend Content list
             for (let key in regReplace) {
                 if (regReplace.hasOwnProperty(key)) {
-                    //                    let value = regReplace[key];
 
                     let secondArray = regReplace[key];
 
@@ -321,17 +101,21 @@
                             'title': 'enter search string',
                         });
 
+                        let $myPointer = jQuery('<i>').attr({
+                            'class': 'fas fa-long-arrow-alt-right leftMarg fa-lg',
+                        });
+
                         let $removeMe = jQuery('<i>').attr({
                             'class': 'fas fa-times fa-lg js-remove',
                             'title': 'click to remove',
                         });
 
                         // build list item
-                        $listItem.append($grabHandle).append($label).append($myInput).append($removeMe);
+                        $listItem.append($grabHandle).append($myInput).append($myPointer).append($label).append($removeMe);
 
 
                         // attach to legend list
-                        $autofillOptionsList.append($listItem);
+                        optionsList.append($listItem);
 
                         // bind list item
                         bindTextChangeListener($listItem);
@@ -344,7 +128,6 @@
 
             for (let key3 in regReplace) {
                 if (regReplace.hasOwnProperty(key3)) {
-                    //                    value = regReplace[key3];
 
                     // build elements
                     let $listItem = jQuery('<li>').attr({
@@ -369,17 +152,270 @@
                         'title': 'enter search string',
                     });
 
+                    let $myPointer = jQuery('<i>').attr({
+                        'class': 'fas fa-long-arrow-alt-right leftMarg fa-lg',
+                    });
+
                     let $removeMe = jQuery('<i>').attr({
                         'class': 'fas fa-times fa-lg js-remove',
                         'title': 'click to remove',
                     });
 
+                    // build listing
+                    $listItem.append($grabHandle).append($myInput).append($myPointer).append($label).append($removeMe);
                     // attach to legend list
-                    $autofillOptionsList.append($listItem.append($grabHandle).append($label).append($myInput).append($removeMe));
+                    optionsList.append($listItem);
                 }
             }
         }
     }
+
+    /**
+     * creating an array of the autofill list options to store into memory
+     * return {object} myObj - returns object array of autofill entries in list
+     */
+    function createArray() {
+        const autofillList = jQuery('#autofillOptions li');
+        const myObj = [];
+        let saveAutofill = {};
+        let autofillTag = '';
+        let myRegex = '';
+        let $myThis;
+
+        for (let z = 0; z < autofillList.length; z += 1) {
+
+            $myThis = jQuery(autofillList[z]);
+            autofillTag = $myThis.find('.autofillTag').text();
+            myRegex = typeof $myThis.find('.regEx').val() === 'undefined' ? '' : $myThis.find('.regEx').val(); // add validation checker to this value
+
+            saveAutofill[autofillTag] = myRegex;
+        }
+
+        myObj.push(saveAutofill);
+
+        return myObj;
+    }
+
+    // ----------------------------------------
+    // sortable object
+    // ----------------------------------------
+    let autofillList = document.getElementById('autofillOptions');
+
+    let sortable = Sortable.create(autofillList, {
+        'group': 'autofillList',
+        'handle': '.my-handle',
+        'animation': 150,
+        'store': {
+            /**
+             * Get the order of elements. Called once during initialization.
+             * @param   {Sortable}  sortable
+             * @returns {Array}
+             */
+            get: function (sortable) {
+                let order = localStorage.getItem(sortable.options.group.name);
+                return order ? order.split('|') : [];
+            },
+
+            /**
+             * Save the order of elements. Called onEnd (when the item is dropped).
+             * @param {Sortable}  sortable
+             */
+            set: function (sortable) {
+                let order;
+                if (typeof (Storage) !== 'undefined') {
+                    order = sortable.toArray();
+                    localStorage.setItem(sortable.options.group.name, order.join('|'));
+                } else {
+                    // Sorry! No Web Storage support..
+                }
+            }
+        },
+        'filter': '.js-remove',
+        'onFilter': function (evt) {
+            let item = evt.item;
+            let ctrl = evt.target;
+
+            if (Sortable.utils.is(ctrl, '.js-remove')) { // Click on remove button
+                item.parentNode.removeChild(item); // remove sortable item
+
+                saveState();
+            }
+        },
+        // Called by any change to the list (add / update / remove)
+        'onSort': function ( /**Event*/ evt) {
+
+            // Save state
+            saveState();
+
+            // same properties as onUpdate
+        },
+    });
+
+    /**
+     * save object to local storage
+     * @param {object} obj - object to be saved into local storage
+     */
+    function saveToLocalStorage(myObj) {
+        let saveMe = JSON.stringify(myObj);
+        localStorage.setItem('autofillVariables', saveMe);
+    }
+
+    /**
+     * save current state of the list
+     * @param {paramType} paramDescription
+     */
+    function saveState() {
+        sortable.save();
+        saveToLocalStorage(createArray());
+    }
+
+    /**
+     * will bind all new option list with a on text change listener
+     * @param {element} elem - new autofill list option
+     */
+    function bindTextChangeListener(elem) {
+        jQuery(elem).find('input').on('change', function () {
+            saveState();
+        });
+    }
+
+    /**
+     * retrive object from local storage
+     * @param {object} obj - object to be saved into local storage
+     */
+    function getFromLocalStorage() {
+        return JSON.parse(localStorage.getItem('autofillVariables'));
+    }
+
+    /**
+     * will walk through edittable portion of WSM window and perform text
+     * replacing with data contained in the list area of tool
+     */
+    function autofills() {
+        const contentFrame = jQuery('iframe#cblt_content').contents();
+        let siteEditorIframe;
+        let viewerIframe;
+        let myChild;
+        let recordEditWindow;
+        let regReplace;
+
+        if (location.pathname.indexOf('editSite') >= 0) {
+            siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
+            viewerIframe = siteEditorIframe.find('iframe#viewer').contents();
+
+            // return array of elements that have children
+            myChild = viewerIframe.find('body').children().filter(function (index, value) {
+                if (value.children.length !== 0) {
+                    return this;
+                }
+            });
+
+            // get stored autofill tags from local storage
+            regReplace = getFromLocalStorage();
+
+            // pass elements with children as base element for autofill replacing
+            useAutofillTags(myChild, regReplace[0]);
+
+        } else {
+
+            recordEditWindow = contentFrame.find('div.main-wrap').find('.input-field').find('div[data-which-field="copy"]');
+
+            // get stored autofill tags from local storage
+            regReplace = getFromLocalStorage();
+
+            // pass elements with children as base element for autofill replacing
+            useAutofillTags(recordEditWindow, regReplace[0]);
+
+            // change focus between text area to trigger text saving.
+            for (let z = 0; z < recordEditWindow.length; z += 1) {
+                jQuery(recordEditWindow[z]).focus();
+            }
+        }
+    }
+
+    /**
+     * create treewalker to navigate DOM and return all TEXT nodes
+     * @param {object} base - base element to crawl for text nodes
+     * @return {array} wordArray - array containing all text nodes on the page
+     */
+    function treeWalk(base) {
+        let treeWalker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, null, false);
+        let wordArray = [];
+
+        while (treeWalker.nextNode()) {
+            if (treeWalker.currentNode.nodeType === 3 && treeWalker.currentNode.textContent.trim() !== '') {
+                wordArray.push(treeWalker.currentNode);
+            }
+        }
+        return wordArray;
+    }
+
+    /**
+     * loop through word list array and replace text with autofill tags
+     * @param {object} baseElem - base element to find and replace text with autofill tags
+     * @param {array} regReplace - object array that contains the regExpressions and corresponding autofill tags
+     */
+    function useAutofillTags(baseElem, regReplace) {
+        let wordList;
+
+        for (let z = 0; z < baseElem.length; z += 1) {
+            // get all visible text on page
+            wordList = treeWalk(baseElem[z]);
+
+            wordList.forEach(function (n) {
+                let text = n.nodeValue;
+
+                // iterate through autofill array and replace matches in text
+                // replace all instances of 'findMe' with 'autofillTag'
+                for (let autofillTag in regReplace) {
+
+                    let findMe = regReplace[autofillTag];
+
+                    if (findMe.indexOf('``') > -1) {
+                        let findArray = findMe.split('``');
+                        for (let a = 0; a < findArray.length; a += 1) {
+                            let myRegex = new RegExp(findArray[a], 'gi');
+
+                            text = text.replace(myRegex, autofillTag);
+                        }
+
+                    } else {
+
+                        let myRegex = new RegExp(findMe, 'gi');
+
+                        text = text.replace(myRegex, autofillTag);
+                    }
+                }
+
+                n.nodeValue = text;
+            });
+        }
+    }
+
+    /**
+     * creates a new autofill entry for the autofill tool,
+     * triggers save event once entry has been created
+     */
+    document.getElementById('addAutofill').onclick = function () {
+        let autofillTag = prompt('Enter autofill tag for the new feild.', '%AUTOFILL_TAG_HERE%');
+
+        if (autofillTag === null || autofillTag === '') {
+            alert('please try again, enter an autofill tag');
+        } else {
+
+            let el = document.createElement('li');
+            el.classList.add('autofillEntry');
+
+            el.innerHTML = '<span class="my-handle" title="drag to re-order"><i class="fas fa-sort"></i></span><input class="regEx" type="text" title="enter search string"><i class="fas fa-long-arrow-alt-right leftMarg fa-lg"></i><div class="autofillTag">' + autofillTag + '</div><i class="fas fa-times fa-lg js-remove" title="click to remove"></i>';
+            let $autofillOptionsList = jQuery('#autofillOptions');
+
+            $autofillOptionsList.append(el);
+            bindTextChangeListener(el);
+        }
+
+        saveState();
+
+    };
 
     /**
      * css styles for tool
@@ -431,6 +467,7 @@
     border: 1px solid rgb(255, 255, 255);
     line-height: 1.25rem;
     text-indent: 10px;
+    margin: 0 0 0 15px;
 }
 
 .autofillEntry {
@@ -444,6 +481,10 @@
     cursor: pointer;
     cursor: hand;
     padding: 0 0 0 10px;
+}
+
+.leftMarg {
+    margin: 0 0 0 15px;
 }
 `);
     jQuery('head').append($myStyles);
