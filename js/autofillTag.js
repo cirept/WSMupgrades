@@ -423,13 +423,13 @@
      * read data from json file
      */
     function readJson() {
-        var autofillURL = 'https://rawgit.com/cirept/WSMupgrades/master/json/autofillTags.json';
+        var autofillURL = 'https://raw.githubusercontent.com/cirept/WSMupgrades/master/json/autofillTags.json';
         var jsonMe;
         jQuery.getJSON(autofillURL, function (data) {
-            console.log(data);
+            console.log(data.autofill);
             jsonMe = data.autofill;
         });
-        console.log(jsonMe);
+//        console.log(jsonMe);
     }
 
     readJson();
