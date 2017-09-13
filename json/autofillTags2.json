@@ -9,196 +9,53 @@
             "%DEALER_CODE%": "Dealer code aka BAC",
             "%DEALER_GEO_ONE%": "",
             "%DEALER_GEO_THREE%": "",
-
-
-
             "%DEALER_GEO_TWO%": "",
-
-
-
             "%DEALER_NAME%": "Dealership Name",
-
-
-
             "%DMA%": "DMA code for the dealership",
-
-
-
             "%ENGINE%": "engine of the Vehicle that is currently browsed",
-
-
-
             "%ENV%": "",
-
-
-
             "%EXTERIOR_COLOR%": "Exterior color of the Vehicle that is currently browsed",
-
-
-
             "%FACEBOOK_USERNAME%": "",
-
-
-
             "%FINANCE_PHONE%": "Phone # for Finance department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%FLEET_PHONE%": "Phone # for Fleet department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%FRANCHISES%": "Dealership Franchises",
-
-
-
             "%FRANCHISES_PHRASE%": "",
-
-
-
             "%FUEL_TYPE%": "",
-
-
-
             "%INV_MAKES%": "Current Makes in the dealer's inventory",
-
-
-
             "%INV_MODELS%": "Current Models in the dealer's inventory",
-
-
-
             "%LEAD_EVENT_ID%": "",
-
-
-
             "%MAKE%": "Make of the Vehicle that is currently browsed",
-
-
-
             "%MODEL%": "Model of the Vehicle that is currently browsed",
-
-
-
             "%MODELS%": "Current Models for the dealership franchises",
-
-
-
             "%NEW/USED%": "",
-
-
-
             "%NEW_PHONE%": "Phone # for New Vehicles department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%ONSTAR_FRANCHISE%": "",
-
-
-
             "%PAGE%": "Page label if one exists, if not then uses page name. This is the page you see in the URL.",
-
-
-
             "%PAGE_LABEL%": "",
-
-
-
             "%PAGE_LAYOUT%": "",
-
-
-
             "%PAGE_NAME%": "",
-
-
-
             "%PARTS_PHONE%": "Phone # for Parts department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%PHONE%": "Default Phone # or SALES department phone # (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%PREFERRED_METRO_AREA%": "Preferred Metro area for the Dealership",
-
-
-
             "%PREFERRED_STATE%": "Preferred State (abbreviated) of the Dealership",
-
-
-
             "%PREFERRED_STATE_FULL_NAME%": "",
-
-
-
             "%SERVICE_PHONE%": "Phone # for Service department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%SESSION_ID%": "session ID set by app server",
-
-
-
             "%SITE_VERSION_STATE%": "",
-
-
             "%STATE%": "State (abbreviated) of the Dealership",
-
-
-
             "%STATE_FULL_NAME%": "",
-
-
-
             "%STOCK_NUMBER%": "",
-
-
-
             "%STREET%": "Street address 1 value from Settings / General",
-
-
-
             "%TRANSMISSION%": "Transmission of the Vehicle that is currently browsed",
-
-
-
             "%TRIM%": "Trim (what ever is configured Mfr/Taxonomy label) of the Vehicle that is currently being browsed",
-
-
-
             "%TWITTER_USERNAME%": "",
-
-
-
             "%TYPE%": "body type",
-
-
-
             "%USED_PHONE%": "Phone # for Used Vehicles department (Actual Dealership phone # or Call tracking # depending on the traffic source)",
-
-
-
             "%VEHICLE_SEARCH_PAGE_KEYWORDS%": "Pulls in the first value for the following search params search, make, model, year",
-
-
-
             "%VIN%": "VIN value of the Vehicle that is currently browsed",
-
-
-
             "%VISITOR_ID%": "ID from the traffic server used in pixel tags. Saved in a cookie on the consumer's computer.",
-
-
-
             "%WEB_ID%": "web_id of the site",
-
-
-
             "%YEAR%": "Year of the Vehicle that is currently browsed",
-
-
-
             "%ZIP%": "Zip code for the Dealership"
         }
     ]
