@@ -267,7 +267,17 @@ var Autofill = (function () {
      * @param {object} obj - object to be saved into local storage
      */
     function getFromLocalStorage() {
-        return JSON.parse(localStorage.getItem('autofillVariables'));
+        let returnMe;
+
+        if (localStorage.getItem('autofillVariables') === null) {
+            returnMe = '';
+        } else {
+            returnMe = JSON.parse(localStorage.getItem('autofillVariables'));
+            returnMe = returnMe[0];
+        }
+        return returnMe;
+
+        //                    return JSON.parse(localStorage.getItem('autofillVariables'));
     }
 
     /**
