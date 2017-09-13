@@ -16,6 +16,7 @@ var Autofill = (function () {
 
     let autofillOptionsList = document.createElement('ul');
     autofillOptionsList.id = 'autofillOptions';
+    autofillOptionsList.classList.add('autofillOptions');
 
     let addButton = document.createElement('button');
     addButton.id = 'addAutofill';
@@ -135,6 +136,7 @@ var Autofill = (function () {
      * @param {object} obj - object to be saved into local storage
      */
     function saveToLocalStorage(myObj) {
+        console.log('autofill : saving');
         let saveMe = JSON.stringify(myObj);
         localStorage.setItem('autofillVariables', saveMe);
     }
@@ -166,7 +168,7 @@ var Autofill = (function () {
 
     // Build Sortable object for use in tool
     let sortable = Sortable.create(autofillOptionsList, {
-        'group': 'autofillList',
+        'group': 'autofillOptions',
         'handle': '.my-handle',
         'animation': 150,
         'store': {
@@ -268,10 +270,13 @@ var Autofill = (function () {
      */
     function getFromLocalStorage() {
         let returnMe;
-
+        console.log('autofill : get local data');
         if (localStorage.getItem('autofillVariables') === null) {
+            console.log('autofill : no local data');
             returnMe = '';
         } else {
+            console.log(localStorage.autofillVariables);
+            console.log('autofill : local data found');
             returnMe = JSON.parse(localStorage.getItem('autofillVariables'));
             returnMe = returnMe[0];
         }
@@ -287,7 +292,7 @@ var Autofill = (function () {
      */
     function buildAutofillOptions(optionsList) {
 
-        let regReplace = getFromLocalStorage()[0];
+        let regReplace = getFromLocalStorage();
         let listElement;
 
         // attach 'add button'
@@ -369,7 +374,7 @@ var Autofill = (function () {
      * @return {object} autofill - contains a simple array with AUTOFILL tags ONLY
      */
     function localDataToString() {
-        var localData = getFromLocalStorage()[0];
+        var localData = getFromLocalStorage();
         var autofill = [];
 
         for (let localKey in localData) {
@@ -511,11 +516,12 @@ var Autofill = (function () {
      */
     function getAutofillList() {
         fetchJSON(myURL).then((data) => {
+            console.log('autofill : autofill list loaded.');
             addButton.onclick = addButtonEventListener(true);
             // build out drop down menu
             buildAutofillList(data);
         }).catch((error) => {
-            console.log('autofill file failed to load, reverting to manual autofill entry method');
+            console.log('autofill : autofill list failed to load, reverting to manual autofill entry method');
             console.log(error);
             addButton.onclick = addButtonEventListener(false);
         });
@@ -623,7 +629,7 @@ var Autofill = (function () {
             regReplace = getFromLocalStorage();
 
             // pass elements with children as base element for autofill replacing
-            useAutofillTags(myChild, regReplace[0]);
+            useAutofillTags(myChild, regReplace);
 
         } else {
 
@@ -633,7 +639,7 @@ var Autofill = (function () {
             regReplace = getFromLocalStorage();
 
             // pass elements with children as base element for autofill replacing
-            useAutofillTags(recordEditWindow, regReplace[0]);
+            useAutofillTags(recordEditWindow, regReplace);
 
             // change focus between text area to trigger text saving.
             for (let z = 0; z < recordEditWindow.length; z += 1) {
