@@ -9,6 +9,6 @@
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/packs/light.min.js
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/packs/solid.min.js
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/fontawesome.min.js
-// @require https://rawgit.com/cirept/WSMupgrades/0.0.3/js/autofillTag.js
+// @require https://rawgit.com/cirept/WSMupgrades/0.0.4/js/autofillTag.js
 // @author cire
 // ==/UserScript==
