@@ -1,6 +1,7 @@
 // ==UserScript==
-// @name WSM UX UPDATES - autofill tag replacement
+// @name Autofill Tool - 0.0.6
 // @namespace www.cobaltgroup.com
+// @version 0.0.6
 // @run-at document-end
 // @include http://websites.cobalt.com/wsm/editSite.do*
 // @include http://websites.cobalt.com/wsm/cms.do*
@@ -9,6 +10,7 @@
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/packs/light.min.js
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/packs/solid.min.js
 // @require https://cdn.rawgit.com/cirept/WSMupgrades/master/js/fontawesome.min.js
-// @require https://rawgit.com/cirept/WSMupgrades/0.0.4/js/autofillTag.js
-// @author cire
+// @require https://rawgit.com/cirept/WSMupgrades/0.0.6/js/autofillTag.js
+// @author cire.pt
+// @grant GM_info
 // ==/UserScript==

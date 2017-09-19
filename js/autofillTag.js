@@ -1,9 +1,21 @@
-/*global document, location, localStorage, Sortable, NodeFilter */
+/*global document, location, localStorage, Sortable, NodeFilter, window */
 
 var Autofill = (function () {
     'use strict';
 
     let myURL = 'https://raw.githubusercontent.com/cirept/WSMupgrades/master/json/autofillTags2.json';
+    let defaultList = {
+        '%DEALER_NAME%': 'SEARCH_FOR_ME',
+        '%FRANCHISES%': 'SEARCH_FOR_ME',
+        '%STREET%': 'SEARCH_FOR_ME',
+        '%CITY%': 'SEARCH_FOR_ME',
+        '%STATE%': 'SEARCH_FOR_ME',
+        '%ZIP%': 'SEARCH_FOR_ME',
+        '%PHONE%': 'SEARCH_FOR_ME',
+        '%NEW_PHONE%': 'SEARCH_FOR_ME',
+    };
+    defaultValues();
+
     // ----------------------------------------
     // autofill menu
     // ----------------------------------------
@@ -14,9 +26,37 @@ var Autofill = (function () {
     autofillOptionsContainer.classList.add('autofillOptionsContainer');
     autofillOptionsContainer.classList.add('hide');
 
+    // minimize list element
+    let minimizeList = document.createElement('button');
+    minimizeList.classList.add('minimizeList');
+    minimizeList.classList.add('myButts');
+    minimizeList.title = 'show list';
+    minimizeList.type = 'button';
+    minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
+    minimizeList.onclick = toggleToolPanel;
+
     let autofillOptionsList = document.createElement('ul');
     autofillOptionsList.id = 'autofillOptions';
     autofillOptionsList.classList.add('autofillOptions');
+
+    let messageDisplay = document.createElement('span');
+    messageDisplay.id = 'toolMessageDisplay';
+    messageDisplay.textContent = `Autofill tag text replacer tool v${GM_info.script.version}`;
+
+    let defaultReset = document.createElement('button');
+    defaultReset.id = 'defaultReset';
+    defaultReset.classList.add('myButts');
+    defaultReset.title = 'Reset Values';
+    defaultReset.innerHTML = '<i class="fas fa-redo fa-lg"></i>';
+    defaultReset.onclick = resetValues;
+
+    let applyAutofills = document.createElement('button');
+    applyAutofills.id = 'applyAutofills';
+    applyAutofills.classList.add('myButts');
+    applyAutofills.type = 'button';
+    applyAutofills.title = 'apply autofills';
+    applyAutofills.innerHTML = '<i class="fas fa-check fa-lg"></i>';
+    applyAutofills.onclick = autofills;
 
     let addButton = document.createElement('button');
     addButton.id = 'addAutofill';
@@ -25,36 +65,21 @@ var Autofill = (function () {
     addButton.title = 'Add Autofill';
     addButton.innerHTML = '<i class="fas fa-plus fa-lg"></i>';
 
-    let applyAutofills = document.createElement('button');
-    applyAutofills.id = 'applyAutofills';
-    applyAutofills.classList.add('myButts');
-    applyAutofills.type = 'button';
-    applyAutofills.title = 'apply autofills';
-    applyAutofills.innerHTML = '<i class="fal fa-magic fa-lg"></i>';
-    applyAutofills.onclick = autofills;
-
-    // minimize list element
-    let minimizeList = document.createElement('button');
-    minimizeList.classList.add('minimizeList');
-    minimizeList.classList.add('myButts');
-    minimizeList.title = 'toggle list';
-    minimizeList.type = 'button';
-    minimizeList.innerHTML = '<i class="fal fa-user-secret fa-lg"></i>';
-    minimizeList.onclick = function () {
-        autofillOptionsContainer.classList.toggle('hide');
-    };
-
     let autofillDropdown = document.createElement('ul');
     autofillDropdown.tabIndex = '4';
     autofillDropdown.classList.add('autofill-dropdown');
     autofillDropdown.classList.add('hide');
     autofillDropdown.onblur = hideMe;
 
+    autofillOptionsContainer.appendChild(messageDisplay);
     autofillOptionsContainer.appendChild(autofillOptionsList);
+    autofillOptionsContainer.appendChild(defaultReset);
     autofillOptionsContainer.appendChild(addButton);
     autofillOptionsContainer.appendChild(autofillDropdown);
 
+    //    wsmEditerTools.appendChild(messageDisplay);
     wsmEditerTools.appendChild(minimizeList);
+    //    wsmEditerTools.appendChild(defaultReset);
     wsmEditerTools.appendChild(applyAutofills);
     wsmEditerTools.appendChild(autofillOptionsContainer);
 
@@ -62,11 +87,39 @@ var Autofill = (function () {
     document.querySelector('header.wsmMainHeader').appendChild(wsmEditerTools);
 
     /**
+     * jQuery functions for animate css
+     */
+    $.fn.extend({
+        'animateCss': function (animationName) {
+            var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+            this.addClass('animated ' + animationName).one(animationEnd, function () {
+                $(this).removeClass('animated ' + animationName);
+            });
+            return this;
+        },
+    });
+
+    /**
+     * Will show or hide the tool's panel
+     * will also update the button's icon and hover text
+     */
+    function toggleToolPanel() {
+        autofillOptionsContainer.classList.toggle('hide');
+
+        if (autofillOptionsContainer.classList.contains('hide')) {
+            minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
+            minimizeList.title = 'show list';
+        } else {
+            minimizeList.innerHTML = '<i class="fas fa-eye-slash fa-lg"></i>';
+            minimizeList.title = 'hide list';
+        }
+    }
+
+    /**
      * apply 'hide' class to element
      * @param {object} event - element that will get the 'hide' class added to it class list
      */
     function hideMe(event) {
-        //        let addButton = document.getElementById('addAutofill');
 
         if (!event.target.classList.contains('hide')) {
             event.target.classList.add('hide');
@@ -112,12 +165,12 @@ var Autofill = (function () {
 
         let removeMeContainer = document.createElement('div');
         removeMeContainer.classList.add('js-remove');
+        removeMeContainer.title = 'click to remove';
 
         let removeMe = document.createElement('i');
         removeMe.classList.add('fas');
         removeMe.classList.add('fa-times');
         removeMe.classList.add('fa-lg');
-        removeMe.title = 'click to remove';
 
         removeMeContainer.appendChild(removeMe);
 
@@ -142,7 +195,8 @@ var Autofill = (function () {
     }
 
     /**
-     * creating an array of the autofill list options to store into memory
+     * creating an array of the configured autofill tags
+     * Also performs simple validation to prevent empty values being saved
      * return {object} myObj - returns object array of autofill entries in list
      */
     function createArray() {
@@ -150,13 +204,29 @@ var Autofill = (function () {
         let saveAutofill = {};
         let autofillTag = '';
         let myRegex = '';
+        let regexInput;
         let $myThis;
 
+        // loop through configured autofills
         for (let z = 0; z < autofillOptionsList.children.length; z += 1) {
 
             $myThis = jQuery(autofillOptionsList.children[z]);
-            autofillTag = $myThis.find('.autofillTag').text();
-            myRegex = typeof $myThis.find('.regEx').val() === 'undefined' ? 'Please Enter a Value' : $myThis.find('.regEx').val(); // add validation checker to this value
+            autofillTag = jQuery.trim($myThis.find('.autofillTag').text()); // trim it just in case the manual autofill input is triggerd
+            regexInput = $myThis.find('.regEx');
+            myRegex = regexInput.val().trim();
+
+            // validate input
+            // do not save until input  empty
+            if (myRegex === '') {
+                autofillOptionsList.children[z].classList.add('myError');
+                applyAutofills.classList.add('disabled');
+                messageDisplay.textContent = 'Please enter a word to search for.';
+                continue;
+            } else {
+                if (autofillOptionsList.children[z].classList.contains('myError')) {
+                    autofillOptionsList.children[z].classList.remove('myError');
+                }
+            }
 
             saveAutofill[autofillTag] = myRegex;
         }
@@ -164,6 +234,48 @@ var Autofill = (function () {
         myObj.push(saveAutofill);
 
         return myObj;
+    }
+
+    /**
+     * Scan autofill drop down list and remove disable class
+     * @param {object} elem - element that being removed from the configured list
+     */
+    function removeDisable(elem) {
+
+        let autofillTag = elem.querySelector('.autofillTag').textContent;
+        let dropDown = autofillDropdown.querySelectorAll('.disabled');
+        let dropDownLength = dropDown.length;
+
+        for (let z = 0; z < dropDownLength; z += 1) {
+            if (autofillTag === dropDown[z].textContent) {
+                dropDown[z].classList.remove('disabled');
+            }
+        }
+    }
+
+    /**
+     * disabled 'magic' button if an entry is blank
+     */
+    function toggleMagicButton() {
+        autofillOptionsList.getElementsByClassName('myError').length >= 1 ? applyAutofills.classList.add('disabled') : applyAutofills.classList.remove('disabled');
+    }
+
+    /**
+     *
+     */
+    function validateList() {
+        if (autofillOptionsList.getElementsByClassName('myError').length > 0) {
+            messageDisplay.textContent = 'Please enter a word to search for.';
+            $('#toolMessageDisplay').animateCss('flash');
+        } else {
+            if (applyAutofills.classList.contains('disabled')) {
+                applyAutofills.classList.remove('disabled');
+            }
+
+            if (messageDisplay.textContent !== '') {
+                messageDisplay.textContent = '';
+            }
+        }
     }
 
     // Build Sortable object for use in tool
@@ -197,21 +309,29 @@ var Autofill = (function () {
             },
         },
         'filter': '.js-remove',
+        /**
+         * event, if list item is removed
+         */
         'onFilter': function (evt) {
+
             let item = evt.item;
             let ctrl = evt.target;
 
             if (Sortable.utils.is(ctrl, '.js-remove')) { // Click on remove button
                 item.parentNode.removeChild(item); // remove sortable item
+                messageDisplay.textContent = 'Item Removed';
+                jQuery(messageDisplay).animateCss('tada');
 
                 // Save state
                 sortable.save();
                 saveToLocalStorage(createArray());
+                removeDisable(item);
+
             }
         },
         // Called by any change to the list (add / update / remove)
-        'onSort': function ( /**Event*/ evt) {
-
+        'onSort': function ( /* evt */ ) {
+console.log('onsort');
             // Save state
             sortable.save();
             saveToLocalStorage(createArray());
@@ -219,25 +339,24 @@ var Autofill = (function () {
     });
 
     /**
-     * save current state of the list
-     * @param {paramType} paramDescription
+     * display message that list have been saved
      */
-    function saveState() {
-        sortable.save();
-        saveToLocalStorage(createArray());
+    function displaySaveMessage() {
+        //        function () {
+        messageDisplay.textContent = 'List Saved';
+        jQuery(messageDisplay).animateCss('tada');
+        //        }
     }
 
     /**
-     * Will remove the element from the page
-     * @param {object} elem - elem that will be removed from the page
+     * save current state of the list, only if the configured list
+     * has no errors
      */
-    function removeMyself(elem) {
-        let self = elem;
-        let parent = self.parentElement;
-        return function () {
-            parent.removeChild(self);
-            saveState();
-        };
+    function saveState() {
+
+//        displaySaveMessage();
+        sortable.save();
+        saveToLocalStorage(createArray());
     }
 
     /**
@@ -245,58 +364,44 @@ var Autofill = (function () {
      * @param {element} elem - new autofill list option
      */
     function bindTextChangeListener(elem) {
-        jQuery(elem).find('input').on('change', function () {
-            saveState();
-        });
-        jQuery(elem).find('input').on('keyup', function () {
-            saveState();
-        });
-    }
-
-    /**
-     * will bind all new option list item with the remove event listener for the 'X'
-     * @param {element} elem - new autofill list option
-     */
-    function bindRemoveMeListener(elem) {
-        jQuery(elem).find('.js-remove').on('click', function () {
-            removeMyself(elem);
-            saveState();
-        });
+        jQuery(elem).find('input').on('change', saveState);
+        jQuery(elem).find('input').on('change', toggleMagicButton);
+        jQuery(elem).find('input').on('change', validateList);
+//        jQuery(elem).find('input').on('change', displaySaveMessage);
+//        jQuery(elem).find('input').on('change', displaySaveMessage);
+        jQuery(elem).find('input').on('keyup', saveState);
+        jQuery(elem).find('input').on('keyup', toggleMagicButton);
+        jQuery(elem).find('input').on('keyup', validateList);
     }
 
     /**
      * retrive object from local storage
+     * retrive object from local storage
      * @param {object} obj - object to be saved into local storage
      */
     function getFromLocalStorage() {
+
         let returnMe;
         console.log('autofill : get local data');
         if (localStorage.getItem('autofillVariables') === null) {
             console.log('autofill : no local data');
-            returnMe = '';
+            returnMe = defaultList;
         } else {
-            console.log(localStorage.autofillVariables);
             console.log('autofill : local data found');
             returnMe = JSON.parse(localStorage.getItem('autofillVariables'));
             returnMe = returnMe[0];
         }
         return returnMe;
-
-        //                    return JSON.parse(localStorage.getItem('autofillVariables'));
     }
 
     /**
      * will construct the autofill display area.
      * Will use data in local storage, if it exists
-     * @para {OBJECT ARRAY} $autofillOptionsList - autofill container div
      */
-    function buildAutofillOptions(optionsList) {
+    function buildAutofillOptions() {
 
         let regReplace = getFromLocalStorage();
         let listElement;
-
-        // attach 'add button'
-        optionsList.after(document.getElementById('addAutofill'));
 
         // build autofill list options IF there is a list that already exists
         if (regReplace) {
@@ -312,61 +417,34 @@ var Autofill = (function () {
                     listElement = listItem(key, regReplace[key]);
 
                     // attach to legend list
-                    optionsList.append(listElement);
+                    autofillOptionsList.append(listElement);
 
-                    // bind list item
+                    // bind list item elements
                     bindTextChangeListener(listElement);
-                    bindRemoveMeListener(listElement);
-                }
-            }
-
-        }
-        /*
-        else {
-
-            for (let key3 in regReplace) {
-                if (regReplace.hasOwnProperty(key3)) {
-
-                    // build elements
-                    let $listItem = jQuery('<li>').attr({
-                        'class': key3,
-                    }).css({
-                        'width': '305px',
-                    });
-
-                    let $grabHandle = jQuery('<span>').attr({
-                        'class': 'my-handle',
-                        'title': 'drag to re-order',
-                    }).html('<i class="fas fa-sort"></i>');
-
-                    let $label = jQuery('<div>').attr({
-                        'class': 'autofillTag',
-                    }).text(key3);
-
-                    let $myInput = jQuery('<input>').attr({
-                        'type': 'text',
-                        'value': '',
-                        'class': 'regEx',
-                        'title': 'enter search string',
-                    });
-
-                    let $myPointer = jQuery('<i>').attr({
-                        'class': 'fas fa-long-arrow-alt-right leftMarg fa-lg',
-                    });
-
-                    let $removeMe = jQuery('<i>').attr({
-                        'class': 'fas fa-times fa-lg js-remove',
-                        'title': 'click to remove',
-                    });
-
-                    // build listing
-                    $listItem.append($grabHandle).append($myInput).append($myPointer).append($label).append($removeMe);
-                    // attach to legend list
-                    optionsList.append($listItem);
                 }
             }
         }
-        */
+    }
+
+    /**
+     * Reset configured autofill tags to the default list
+     */
+    function resetValues() {
+        if (window.confirm('Reset Values?')) {
+            // erase current list
+            autofillOptionsList.innerHTML = '';
+            // remove stored variables from memory
+            localStorage.removeItem('autofillVariables');
+            // build default list
+            buildAutofillOptions();
+            // reset apply button if it is disabled
+            toggleMagicButton();
+            // update display message
+            messageDisplay.textContent = 'Values Reset';
+            jQuery('#toolMessageDisplay').animateCss('tada');
+            // save new values
+            saveState();
+        }
     }
 
     /**
@@ -374,6 +452,7 @@ var Autofill = (function () {
      * @return {object} autofill - contains a simple array with AUTOFILL tags ONLY
      */
     function localDataToString() {
+
         var localData = getFromLocalStorage();
         var autofill = [];
 
@@ -382,16 +461,6 @@ var Autofill = (function () {
         }
 
         return autofill;
-    }
-    /**
-     * Disable list items during building of the autofill drop down options
-     */
-    function disableListItem(myKey) {
-
-        if (localDataToString().includes(myKey)) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -407,7 +476,9 @@ var Autofill = (function () {
 
             autofillOptionsList.appendChild(listElement);
 
-            for (let y = 0; y < listElement.children.length; y += 1) {
+            let listLength = listElement.children.length;
+
+            for (let y = 0; y < listLength; y += 1) {
                 if (listElement.children[y].tagName === 'INPUT') {
                     listElement.children[y].focus();
                 }
@@ -415,9 +486,8 @@ var Autofill = (function () {
             // hide drop down menu
             document.querySelector('ul.autofill-dropdown').classList.add('hide');
 
-            // bind list item
+            // bind list item elements
             bindTextChangeListener(listElement);
-            bindRemoveMeListener(listElement);
 
             // save state of new list
             saveState();
@@ -432,13 +502,15 @@ var Autofill = (function () {
      * @param {object} data - the autofill data that will be used to populate the options
      */
     function buildAutofillList(data) {
+
+        let localData = localDataToString();
         // build out drop down menu
         for (let myKey in data[0]) {
             // create 'li' for each autofill tag in the list
             let myListItem = document.createElement('li');
             myListItem.textContent = myKey;
             // if autofill tag is present in the active list, disable it
-            if (disableListItem(myKey)) {
+            if (localData.includes(myKey)) {
                 myListItem.classList.add('disabled');
             }
             // add the list element to the 'drop down' list
@@ -459,21 +531,20 @@ var Autofill = (function () {
     function bindAddAutofill() {
 
         return function () {
-            let autofillTag = prompt('Enter autofill tag for the new feild.', '%AUTOFILL_TAG_HERE%');
+            let autofillTag = window.prompt('Enter autofill tag for the new feild.', '%AUTOFILL_TAG_HERE%');
 
             if (autofillTag === null || autofillTag === '') {
-                alert('please try again, please enter an autofill tag');
+                window.alert('please try again, please enter an autofill tag');
             } else if (localDataToString().includes(autofillTag)) {
-                alert('please try again, autofill tag already present on list');
+                window.alert('please try again, autofill tag already present on list');
             } else {
 
                 let listElement = listItem(autofillTag);
 
                 autofillOptionsList.appendChild(listElement);
 
-                // bind list item
+                // bind list item elements
                 bindTextChangeListener(listElement);
-                bindRemoveMeListener(listElement);
 
                 // save state of new list
                 saveState();
@@ -486,6 +557,7 @@ var Autofill = (function () {
      * @param {bool} bool - boolean variable that will determine what method will be used
      */
     function addButtonEventListener(bool) {
+
         if (bool) {
             return function () {
                 this.classList.add('disabled');
@@ -500,6 +572,7 @@ var Autofill = (function () {
      * read data from json file
      */
     function fetchJSON(url) {
+
         return new Promise(function (resolve, reject) {
             jQuery.getJSON(url)
                 .done( /** resolve data */ function (json) {
@@ -512,9 +585,10 @@ var Autofill = (function () {
     }
 
     /**
-     * Build drop down menu
+     * Start events to build the autofill 'drop down menu'
      */
     function getAutofillList() {
+
         fetchJSON(myURL).then((data) => {
             console.log('autofill : autofill list loaded.');
             addButton.onclick = addButtonEventListener(true);
@@ -533,6 +607,7 @@ var Autofill = (function () {
      * @return {array} wordArray - array containing all text nodes on the page
      */
     function treeWalk(base) {
+
         let treeWalker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT, null, false);
         let wordArray = [];
 
@@ -544,7 +619,11 @@ var Autofill = (function () {
         return wordArray;
     }
 
+    /**
+     * Escape characters to prevent malacious input from user
+     */
     RegExp.escape = function (s) {
+
         return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     };
 
@@ -554,31 +633,28 @@ var Autofill = (function () {
      * @param {string} regReplace - text string to search for
      */
     function replaceText(wordList, regReplace) {
-
         wordList.forEach(function (n) {
             let text = n.nodeValue;
-
             // iterate through autofill array and replace matches in text
             // replace all instances of 'findMe' with 'autofillTag'
             for (let autofillTag in regReplace) {
-
                 let findMe = regReplace[autofillTag];
                 // if split phrases are needed
                 if (findMe.indexOf('``') > -1) {
                     let findArray = findMe.split('``');
-                    for (let a = 0; a < findArray.length; a += 1) {
+                    let arrayLength = findArray.length;
+                    for (let a = 0; a < arrayLength; a += 1) {
+                        let searchText = findArray[a].trim();
+                        if (searchText === '') {
+                            continue;
+                        }
                         let findThis = '\\b' + RegExp.escape(findArray[a]) + '\\b';
-
                         let myRegex = new RegExp(findThis, 'gi');
-
                         text = text.replace(myRegex, autofillTag);
                     }
-
                 } else {
-
                     let findThis = '\\b' + RegExp.escape(findMe) + '\\b';
                     let myRegex = new RegExp(findThis, 'gi');
-
                     text = text.replace(myRegex, autofillTag);
                 }
             }
@@ -592,9 +668,11 @@ var Autofill = (function () {
      * @param {array} regReplace - object array that contains the regExpressions and corresponding autofill tags
      */
     function useAutofillTags(baseElem, regReplace) {
-        let wordList;
 
-        for (let z = 0; z < baseElem.length; z += 1) {
+        let wordList;
+        let baseLength = baseElem.length;
+
+        for (let z = 0; z < baseLength; z += 1) {
             // get all visible text on page
             wordList = treeWalk(baseElem[z]);
 
@@ -607,14 +685,16 @@ var Autofill = (function () {
      * replacing with data contained in the list area of tool
      */
     function autofills() {
+
         const contentFrame = jQuery('iframe#cblt_content').contents();
         let siteEditorIframe;
         let viewerIframe;
         let myChild;
         let recordEditWindow;
-        let regReplace;
+        let regReplace = getFromLocalStorage(); // get stored autofill tags from local storage
 
         if (location.pathname.indexOf('editSite') >= 0) {
+            console.log('edit mode detected');
             siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
             viewerIframe = siteEditorIframe.find('iframe#viewer').contents();
 
@@ -625,9 +705,6 @@ var Autofill = (function () {
                 }
             });
 
-            // get stored autofill tags from local storage
-            regReplace = getFromLocalStorage();
-
             // pass elements with children as base element for autofill replacing
             useAutofillTags(myChild, regReplace);
 
@@ -635,14 +712,12 @@ var Autofill = (function () {
 
             recordEditWindow = contentFrame.find('div.main-wrap').find('.input-field').find('div[data-which-field="copy"]');
 
-            // get stored autofill tags from local storage
-            regReplace = getFromLocalStorage();
-
             // pass elements with children as base element for autofill replacing
             useAutofillTags(recordEditWindow, regReplace);
 
             // change focus between text area to trigger text saving.
-            for (let z = 0; z < recordEditWindow.length; z += 1) {
+            let recordLendth = recordEditWindow.length;
+            for (let z = 0; z < recordLendth; z += 1) {
                 jQuery(recordEditWindow[z]).focus();
             }
         }
@@ -651,18 +726,37 @@ var Autofill = (function () {
     /**
      * css styles for tool
      */
-    let toolStyles = `
+    function styleTools() {
+
+        let fileref = document.createElement('link');
+        fileref.id = 'myjUIcss';
+        fileref.rel = 'stylesheet';
+        fileref.type = 'text/css';
+        fileref.href = 'https://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css';
+
+        let animate = document.createElement('link');
+        fileref.rel = 'stylesheet';
+        fileref.type = 'text/css';
+        fileref.href = 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css';
+
+
+        let toolStyles = `
 .customEditorTools {
     position: absolute;
-    left: 57%;
     width: auto;
     color: white;
     background: #EAE8E8;
-    /*background: linear-gradient(to top, #2193b0, #6dd5ed);*/
+}
+
+#toolMessageDisplay {
+    position: absolute;
+    top: 10px;
+    left: 120px;
+    color: red;
 }
 
 #addAutofill {
-    width: 100%;
+    width: 90%;
     padding: 5px 30px;
 }
 
@@ -683,12 +777,31 @@ var Autofill = (function () {
     width: auto;
     position: relative;
     padding: 5px 30px;
+    background: rgb(130, 198, 0);
+}
+
+#applyAutofills.disabled {
+    background: #333;
 }
 
 .minimizeList {
     position: relative;
     float: right;
-    padding: 5px 30px;
+    padding: 5px 13px;
+}
+
+#defaultReset {
+    position: relative;
+    float: right;
+    width: 10%;
+    padding: 5px;
+    background: rgb(255, 255, 255);
+    color: rgb(130, 79, 214);
+}
+
+#defaultReset:hover {
+    background: rgb(130, 79, 214);
+    color: #fff;
 }
 
 .my-handle {
@@ -713,13 +826,14 @@ var Autofill = (function () {
     line-height: 1.25rem;
     text-indent: 10px;
     margin: 0 0 0 15px;
+    width: 200px;
 }
 
 .autofillEntry {
     width: auto;
     padding: 5px 10px;
     border: 1px solid #793CC4;
-    margin: 10px;
+    margin: 3px 10px;
     color: #793CC4;
 }
 
@@ -760,7 +874,7 @@ var Autofill = (function () {
 }
 
 .autofillOptionsContainer {
-    width: 400px;
+    width: 450px;
 }
 
 .hide {
@@ -770,14 +884,49 @@ var Autofill = (function () {
 .disabled {
     pointer-events: none;
     background: rgba(0,0,0,.75);
-}`;
-    const myStyles = document.createElement('style');
-    myStyles.type = 'text/css';
-    myStyles.innerHTML = toolStyles;
-    document.head.append(myStyles);
+    cursor: no-drop;
+}
+
+.myError {
+    border: 1px solid red;
+}
+`;
+        const myStyles = document.createElement('style');
+        myStyles.type = 'text/css';
+        myStyles.innerHTML = toolStyles;
+
+        // attach styles to page
+        document.head.append(myStyles);
+        document.head.append(fileref);
+        document.head.append(animate);
+    }
 
 
     // run tool
-    buildAutofillOptions(autofillOptionsList);
+    buildAutofillOptions();
     getAutofillList();
+    styleTools();
+
+
+    // make legend container draggable
+    //    jQuery('.customEditorTools').draggable();
+
+    /**
+     * Get data from 'Settings' to autofill into the defaults list
+     */
+    function defaultValues() {
+
+        jQuery.get('editSiteSettings.do?webId=motp-builder40&locale=en_US&pathName=editSettings', function (data) {
+            let myDiv = document.createElement('div');
+            myDiv.innerHTML = data;
+
+            defaultList['%DEALER_NAME%'] = myDiv.querySelector('input[name="name"]').value;
+            defaultList['%STREET%'] = myDiv.querySelector('input#contact_address_street1').value;
+            defaultList['%CITY%'] = myDiv.querySelector('input#contact_address_city').value;
+            defaultList['%ZIP%'] = myDiv.querySelector('input#contact_address_postalCode').value;
+            defaultList['%STATE%'] = myDiv.querySelector('select#contact_address_state').value;
+        }, 'html');
+
+    }
+
 })();
