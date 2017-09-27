@@ -14,6 +14,7 @@ var Autofill = (function () {
         '%PHONE%': 'SEARCH_FOR_ME',
         '%NEW_PHONE%': 'SEARCH_FOR_ME',
     };
+    defaultValues();
 
     // ----------------------------------------
     // autofill menu
@@ -25,9 +26,37 @@ var Autofill = (function () {
     autofillOptionsContainer.classList.add('autofillOptionsContainer');
     autofillOptionsContainer.classList.add('hide');
 
+    // minimize list element
+    let minimizeList = document.createElement('button');
+    minimizeList.classList.add('minimizeList');
+    minimizeList.classList.add('myButts');
+    minimizeList.title = 'show list';
+    minimizeList.type = 'button';
+    minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
+    minimizeList.onclick = toggleToolPanel;
+
     let autofillOptionsList = document.createElement('ul');
     autofillOptionsList.id = 'autofillOptions';
     autofillOptionsList.classList.add('autofillOptions');
+
+    let messageDisplay = document.createElement('span');
+    messageDisplay.id = 'toolMessageDisplay';
+    messageDisplay.textContent = `Autofill tag text replacer tool v${GM_info.script.version}`;
+
+    let defaultReset = document.createElement('button');
+    defaultReset.id = 'defaultReset';
+    defaultReset.classList.add('myButts');
+    defaultReset.title = 'Reset Values';
+    defaultReset.innerHTML = '<i class="fas fa-redo fa-lg"></i>';
+    defaultReset.onclick = resetValues;
+
+    let applyAutofills = document.createElement('button');
+    applyAutofills.id = 'applyAutofills';
+    applyAutofills.classList.add('myButts');
+    applyAutofills.type = 'button';
+    applyAutofills.title = 'apply autofills';
+    applyAutofills.innerHTML = '<i class="fas fa-check fa-lg"></i>';
+    applyAutofills.onclick = autofills;
 
     let addButton = document.createElement('button');
     addButton.id = 'addAutofill';
@@ -36,32 +65,15 @@ var Autofill = (function () {
     addButton.title = 'Add Autofill';
     addButton.innerHTML = '<i class="fas fa-plus fa-lg"></i>';
 
-    let applyAutofills = document.createElement('button');
-    applyAutofills.id = 'applyAutofills';
-    applyAutofills.classList.add('myButts');
-    applyAutofills.type = 'button';
-    applyAutofills.title = 'apply autofills';
-    applyAutofills.innerHTML = '<i class="fal fa-magic fa-lg"></i>';
-    applyAutofills.onclick = autofills;
-
-    // minimize list element
-    let minimizeList = document.createElement('button');
-    minimizeList.classList.add('minimizeList');
-    minimizeList.classList.add('myButts');
-    minimizeList.title = 'toggle list';
-    minimizeList.type = 'button';
-    minimizeList.innerHTML = '<i class="fal fa-user-secret fa-lg"></i>';
-    minimizeList.onclick = function () {
-        autofillOptionsContainer.classList.toggle('hide');
-    };
-
     let autofillDropdown = document.createElement('ul');
     autofillDropdown.tabIndex = '4';
     autofillDropdown.classList.add('autofill-dropdown');
     autofillDropdown.classList.add('hide');
     autofillDropdown.onblur = hideMe;
 
+    autofillOptionsContainer.appendChild(messageDisplay);
     autofillOptionsContainer.appendChild(autofillOptionsList);
+    autofillOptionsContainer.appendChild(defaultReset);
     autofillOptionsContainer.appendChild(addButton);
     autofillOptionsContainer.appendChild(autofillDropdown);
 
@@ -71,6 +83,35 @@ var Autofill = (function () {
 
     // attach tool elements to page
     document.querySelector('header.wsmMainHeader').appendChild(wsmEditerTools);
+
+    /**
+     * jQuery functions for animate css
+     */
+    $.fn.extend({
+        'animateCss': function (animationName) {
+            var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+            this.addClass('animated ' + animationName).one(animationEnd, function () {
+                $(this).removeClass('animated ' + animationName);
+            });
+            return this;
+        },
+    });
+
+    /**
+     * Will show or hide the tool's panel
+     * will also update the button's icon and hover text
+     */
+    function toggleToolPanel() {
+        autofillOptionsContainer.classList.toggle('hide');
+
+        if (autofillOptionsContainer.classList.contains('hide')) {
+            minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
+            minimizeList.title = 'show list';
+        } else {
+            minimizeList.innerHTML = '<i class="fas fa-eye-slash fa-lg"></i>';
+            minimizeList.title = 'hide list';
+        }
+    }
 
     /**
      * apply 'hide' class to element
@@ -113,6 +154,9 @@ var Autofill = (function () {
         myInput.classList.add('regEx');
         myInput.title = 'enter search string';
         myInput.value = text;
+        myInput.onkeypress = function () {
+            this.style.width = (this.value.length + 1) * 8 + 'px';
+        };
 
         let myPointer = document.createElement('i');
         myPointer.classList.add('fas');
@@ -152,7 +196,8 @@ var Autofill = (function () {
     }
 
     /**
-     * creating an array of the autofill list options to store into memory
+     * creating an array of the configured autofill tags
+     * Also performs simple validation to prevent empty values being saved
      * return {object} myObj - returns object array of autofill entries in list
      */
     function createArray() {
@@ -160,13 +205,29 @@ var Autofill = (function () {
         let saveAutofill = {};
         let autofillTag = '';
         let myRegex = '';
+        let regexInput;
         let $myThis;
 
+        // loop through configured autofills
         for (let z = 0; z < autofillOptionsList.children.length; z += 1) {
 
             $myThis = jQuery(autofillOptionsList.children[z]);
-            autofillTag = $myThis.find('.autofillTag').text();
-            myRegex = typeof $myThis.find('.regEx').val() === 'undefined' ? 'Please Enter a Value' : $myThis.find('.regEx').val(); // add validation checker to this value
+            autofillTag = jQuery.trim($myThis.find('.autofillTag').text()); // trim it just in case the manual autofill input is triggerd
+            regexInput = $myThis.find('.regEx');
+            myRegex = regexInput.val().trim();
+
+            // validate input
+            // do not save until input  empty
+            if (myRegex === '') {
+                autofillOptionsList.children[z].classList.add('myError');
+                applyAutofills.classList.add('disabled');
+                messageDisplay.textContent = 'Please enter a word to search for.';
+                continue;
+            } else {
+                if (autofillOptionsList.children[z].classList.contains('myError')) {
+                    autofillOptionsList.children[z].classList.remove('myError');
+                }
+            }
 
             saveAutofill[autofillTag] = myRegex;
         }
@@ -189,6 +250,31 @@ var Autofill = (function () {
         for (let z = 0; z < dropDownLength; z += 1) {
             if (autofillTag === dropDown[z].textContent) {
                 dropDown[z].classList.remove('disabled');
+            }
+        }
+    }
+
+    /**
+     * disabled 'magic' button if an entry is blank
+     */
+    function toggleMagicButton() {
+        autofillOptionsList.getElementsByClassName('myError').length >= 1 ? applyAutofills.classList.add('disabled') : applyAutofills.classList.remove('disabled');
+    }
+
+    /**
+     *
+     */
+    function validateList() {
+        if (autofillOptionsList.getElementsByClassName('myError').length > 0) {
+            messageDisplay.textContent = 'Please enter a word to search for.';
+            $('#toolMessageDisplay').animateCss('flash');
+        } else {
+            if (applyAutofills.classList.contains('disabled')) {
+                applyAutofills.classList.remove('disabled');
+            }
+
+            if (messageDisplay.textContent !== '') {
+                messageDisplay.textContent = '';
             }
         }
     }
@@ -224,22 +310,29 @@ var Autofill = (function () {
             },
         },
         'filter': '.js-remove',
+        /**
+         * event, if list item is removed
+         */
         'onFilter': function (evt) {
+
             let item = evt.item;
             let ctrl = evt.target;
 
             if (Sortable.utils.is(ctrl, '.js-remove')) { // Click on remove button
                 item.parentNode.removeChild(item); // remove sortable item
+                messageDisplay.textContent = 'Item Removed';
+                jQuery(messageDisplay).animateCss('tada');
 
                 // Save state
                 sortable.save();
                 saveToLocalStorage(createArray());
                 removeDisable(item);
+
             }
         },
         // Called by any change to the list (add / update / remove)
         'onSort': function ( /* evt */ ) {
-
+            console.log('onsort');
             // Save state
             sortable.save();
             saveToLocalStorage(createArray());
@@ -247,25 +340,21 @@ var Autofill = (function () {
     });
 
     /**
-     * save current state of the list
-     * @param {paramType} paramDescription
+     * display message that list have been saved
      */
-    function saveState() {
-        sortable.save();
-        saveToLocalStorage(createArray());
+    function displaySaveMessage() {
+        messageDisplay.textContent = 'List Saved';
+        jQuery(messageDisplay).animateCss('tada');
     }
 
     /**
-     * Will remove the element from the page
-     * @param {object} elem - elem that will be removed from the page
+     * save current state of the list, only if the configured list
+     * has no errors
      */
-    function removeMyself(elem) {
-        let self = elem;
-        let parent = self.parentElement;
-        return function () {
-            parent.removeChild(self);
-            saveState();
-        };
+    function saveState() {
+
+        sortable.save();
+        saveToLocalStorage(createArray());
     }
 
     /**
@@ -274,10 +363,15 @@ var Autofill = (function () {
      */
     function bindTextChangeListener(elem) {
         jQuery(elem).find('input').on('change', saveState);
+        jQuery(elem).find('input').on('change', toggleMagicButton);
+        jQuery(elem).find('input').on('change', validateList);
         jQuery(elem).find('input').on('keyup', saveState);
+        jQuery(elem).find('input').on('keyup', toggleMagicButton);
+        jQuery(elem).find('input').on('keyup', validateList);
     }
 
     /**
+     * retrive object from local storage
      * retrive object from local storage
      * @param {object} obj - object to be saved into local storage
      */
@@ -299,15 +393,11 @@ var Autofill = (function () {
     /**
      * will construct the autofill display area.
      * Will use data in local storage, if it exists
-     * @para {OBJECT ARRAY} $autofillOptionsList - autofill container div
      */
-    function buildAutofillOptions(optionsList) {
+    function buildAutofillOptions() {
 
         let regReplace = getFromLocalStorage();
         let listElement;
-
-        // attach 'add button'
-        optionsList.after(document.getElementById('addAutofill'));
 
         // build autofill list options IF there is a list that already exists
         if (regReplace) {
@@ -323,12 +413,33 @@ var Autofill = (function () {
                     listElement = listItem(key, regReplace[key]);
 
                     // attach to legend list
-                    optionsList.append(listElement);
+                    autofillOptionsList.append(listElement);
 
                     // bind list item elements
                     bindTextChangeListener(listElement);
                 }
             }
+        }
+    }
+
+    /**
+     * Reset configured autofill tags to the default list
+     */
+    function resetValues() {
+        if (window.confirm('Reset Values?')) {
+            // erase current list
+            autofillOptionsList.innerHTML = '';
+            // remove stored variables from memory
+            localStorage.removeItem('autofillVariables');
+            // build default list
+            buildAutofillOptions();
+            // reset apply button if it is disabled
+            toggleMagicButton();
+            // update display message
+            messageDisplay.textContent = 'Values Reset';
+            jQuery('#toolMessageDisplay').animateCss('tada');
+            // save new values
+            saveState();
         }
     }
 
@@ -518,34 +629,28 @@ var Autofill = (function () {
      * @param {string} regReplace - text string to search for
      */
     function replaceText(wordList, regReplace) {
-
         wordList.forEach(function (n) {
             let text = n.nodeValue;
-
             // iterate through autofill array and replace matches in text
             // replace all instances of 'findMe' with 'autofillTag'
             for (let autofillTag in regReplace) {
-
                 let findMe = regReplace[autofillTag];
                 // if split phrases are needed
                 if (findMe.indexOf('``') > -1) {
-
                     let findArray = findMe.split('``');
                     let arrayLength = findArray.length;
-
                     for (let a = 0; a < arrayLength; a += 1) {
+                        let searchText = findArray[a].trim();
+                        if (searchText === '') {
+                            continue;
+                        }
                         let findThis = '\\b' + RegExp.escape(findArray[a]) + '\\b';
-
                         let myRegex = new RegExp(findThis, 'gi');
-
                         text = text.replace(myRegex, autofillTag);
                     }
-
                 } else {
-
                     let findThis = '\\b' + RegExp.escape(findMe) + '\\b';
                     let myRegex = new RegExp(findThis, 'gi');
-
                     text = text.replace(myRegex, autofillTag);
                 }
             }
@@ -566,7 +671,6 @@ var Autofill = (function () {
         for (let z = 0; z < baseLength; z += 1) {
             // get all visible text on page
             wordList = treeWalk(baseElem[z]);
-
             replaceText(wordList, regReplace);
         }
     }
@@ -582,9 +686,10 @@ var Autofill = (function () {
         let viewerIframe;
         let myChild;
         let recordEditWindow;
-        let regReplace;
+        let regReplace = getFromLocalStorage(); // get stored autofill tags from local storage
 
         if (location.pathname.indexOf('editSite') >= 0) {
+            console.log('edit mode detected');
             siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
             viewerIframe = siteEditorIframe.find('iframe#viewer').contents();
 
@@ -595,18 +700,12 @@ var Autofill = (function () {
                 }
             });
 
-            // get stored autofill tags from local storage
-            regReplace = getFromLocalStorage();
-
             // pass elements with children as base element for autofill replacing
             useAutofillTags(myChild, regReplace);
 
         } else {
 
             recordEditWindow = contentFrame.find('div.main-wrap').find('.input-field').find('div[data-which-field="copy"]');
-
-            // get stored autofill tags from local storage
-            regReplace = getFromLocalStorage();
 
             // pass elements with children as base element for autofill replacing
             useAutofillTags(recordEditWindow, regReplace);
@@ -622,18 +721,31 @@ var Autofill = (function () {
     /**
      * css styles for tool
      */
-    let toolStyles = `
+    function styleTools() {
+
+        let animate = document.createElement('link');
+        animate.rel = 'stylesheet';
+        animate.type = 'text/css';
+        animate.href = 'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css';
+
+
+        let toolStyles = `
 .customEditorTools {
     position: absolute;
-    left: 57%;
     width: auto;
     color: white;
     background: #EAE8E8;
-    /*background: linear-gradient(to top, #2193b0, #6dd5ed);*/
+}
+
+#toolMessageDisplay {
+    position: absolute;
+    top: 10px;
+    left: 120px;
+    color: red;
 }
 
 #addAutofill {
-    width: 100%;
+    width: 90%;
     padding: 5px 30px;
 }
 
@@ -654,12 +766,31 @@ var Autofill = (function () {
     width: auto;
     position: relative;
     padding: 5px 30px;
+    background: rgb(130, 198, 0);
+}
+
+#applyAutofills.disabled {
+    background: #333;
 }
 
 .minimizeList {
     position: relative;
     float: right;
-    padding: 5px 30px;
+    padding: 5px 13px;
+}
+
+#defaultReset {
+    position: relative;
+    float: right;
+    width: 10%;
+    padding: 5px;
+    background: rgb(255, 255, 255);
+    color: rgb(130, 79, 214);
+}
+
+#defaultReset:hover {
+    background: rgb(130, 79, 214);
+    color: #fff;
 }
 
 .my-handle {
@@ -684,6 +815,7 @@ var Autofill = (function () {
     line-height: 1.25rem;
     text-indent: 10px;
     margin: 0 0 0 15px;
+    width: 200px;
 }
 
 .autofillEntry {
@@ -731,7 +863,7 @@ var Autofill = (function () {
 }
 
 .autofillOptionsContainer {
-    width: 400px;
+    width: 450px;
 }
 
 .hide {
@@ -741,34 +873,57 @@ var Autofill = (function () {
 .disabled {
     pointer-events: none;
     background: rgba(0,0,0,.75);
-}`;
-    const myStyles = document.createElement('style');
-    myStyles.type = 'text/css';
-    myStyles.innerHTML = toolStyles;
-    document.head.append(myStyles);
+    cursor: no-drop;
+}
 
+.myError {
+    border: 1px solid red;
+}
+`;
+        const myStyles = document.createElement('style');
+        myStyles.type = 'text/css';
+        myStyles.innerHTML = toolStyles;
 
-    // run tool
-    buildAutofillOptions(autofillOptionsList);
-    getAutofillList();
-
-    function ajaxRequest() {
-        jQuery.get('editSiteSettings.do?webId=motp-builder40&locale=en_US&pathName=editSettings', function (data) {
-            let myDiv = document.createElement('div')
-            myDiv.innerHTML = data;
-            console.log(myDiv);
-            let dealerName = myDiv.querySelector('input[name="name"]').value;
-            let street = myDiv.querySelector('input#contact_address_street1').value;
-            let city = myDiv.querySelector('input#contact_address_city').value;
-            let zip = myDiv.querySelector('input#contact_address_postalCode').value;
-            let state = myDiv.querySelector('select#contact_address_state').value;
-        }, 'html');
-        //        jQuery.get('wsm/route/base-view/siteTools?configCtx=%7B%22webId%22%3A%22motp-builder40%22%2C%22version%22%3A%22WIP%22%2C%22locale%22%3A%22en_US%22%2C%22page%22%3A%22HomePage%22%7D&amp;allStyles=true', function (data) {
-        //            let myDiv = document.createElement('div')
-        //            myDiv.innerHTML = data;
-        //            console.log(myDiv.querySelector('a[target="proof"]').getAttribute('href'));
-        //        }, 'html');
+        // attach styles to page
+        document.head.append(myStyles);
+        document.head.append(animate);
     }
 
-    //    ajaxRequest();
+    // run tool
+    buildAutofillOptions();
+    getAutofillList();
+    styleTools();
+
+    /**
+     * Get data from 'Settings' to autofill into the defaults list
+     */
+    function defaultValues() {
+
+        let webID = document.getElementById('siWebId').querySelector('label.displayValue').textContent;
+        let siteSettingsURL = `editSiteSettings.do?webId=${webID}&locale=en_US&pathName=editSettings`;
+
+        jQuery.get(siteSettingsURL, function (data) {
+            let myDiv = document.createElement('div');
+            myDiv.innerHTML = data;
+            let franchises = myDiv.querySelector('select#associatedFranchises').options;
+            let myLength = franchises.length;
+            let myFranchises = [];
+
+            // create dranchises string
+            for (let x = 0; x < myLength; x += 1) {
+                myFranchises.push(franchises[x].textContent);
+            }
+
+            defaultList['%DEALER_NAME%'] = myDiv.querySelector('input[name="name"]').value;
+            defaultList['%STREET%'] = myDiv.querySelector('input#contact_address_street1').value;
+            defaultList['%CITY%'] = myDiv.querySelector('input#contact_address_city').value;
+            defaultList['%ZIP%'] = myDiv.querySelector('input#contact_address_postalCode').value;
+            defaultList['%STATE%'] = myDiv.querySelector('select#contact_address_state').value;
+            defaultList['%PHONE%'] = myDiv.querySelector('input[name="contact_phone_number"]').value;
+            defaultList['%FRANCHISES%'] = myFranchises.join(', ');
+
+        }, 'html');
+
+    }
+
 })();
