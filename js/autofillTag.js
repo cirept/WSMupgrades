@@ -102,6 +102,7 @@ var Autofill = (function () {
      * will also update the button's icon and hover text
      */
     function toggleToolPanel() {
+
         autofillOptionsContainer.classList.toggle('hide');
 
         if (autofillOptionsContainer.classList.contains('hide')) {
@@ -133,6 +134,7 @@ var Autofill = (function () {
      * @param {string} text - the text that will be used as the input value
      */
     function listItem(autofill, text) {
+
         if (!text) {
             text = 'SEARCH_FOR_ME';
         }
@@ -190,6 +192,7 @@ var Autofill = (function () {
      * @param {object} obj - object to be saved into local storage
      */
     function saveToLocalStorage(myObj) {
+
         console.log('autofill : saving');
         let saveMe = JSON.stringify(myObj);
         localStorage.setItem('autofillVariables', saveMe);
@@ -201,6 +204,7 @@ var Autofill = (function () {
      * return {object} myObj - returns object array of autofill entries in list
      */
     function createArray() {
+
         let myObj = [];
         let saveAutofill = {};
         let autofillTag = '';
@@ -258,6 +262,7 @@ var Autofill = (function () {
      * disabled 'magic' button if an entry is blank
      */
     function toggleMagicButton() {
+
         autofillOptionsList.getElementsByClassName('myError').length >= 1 ? applyAutofills.classList.add('disabled') : applyAutofills.classList.remove('disabled');
     }
 
@@ -265,6 +270,7 @@ var Autofill = (function () {
      *
      */
     function validateList() {
+
         if (autofillOptionsList.getElementsByClassName('myError').length > 0) {
             messageDisplay.textContent = 'Please enter a word to search for.';
             $('#toolMessageDisplay').animateCss('flash');
@@ -291,6 +297,7 @@ var Autofill = (function () {
              * @returns {Array}
              */
             'get': function (sortable) {
+
                 let order = localStorage.getItem(sortable.options.group.name);
                 return order ? order.split('|') : [];
             },
@@ -300,6 +307,7 @@ var Autofill = (function () {
              * @param {Sortable}  sortable
              */
             'set': function (sortable) {
+
                 let order;
                 if (typeof Storage !== 'undefined') {
                     order = sortable.toArray();
@@ -332,7 +340,7 @@ var Autofill = (function () {
         },
         // Called by any change to the list (add / update / remove)
         'onSort': function ( /* evt */ ) {
-            console.log('onsort');
+
             // Save state
             sortable.save();
             saveToLocalStorage(createArray());
@@ -343,6 +351,7 @@ var Autofill = (function () {
      * display message that list have been saved
      */
     function displaySaveMessage() {
+
         messageDisplay.textContent = 'List Saved';
         jQuery(messageDisplay).animateCss('tada');
     }
@@ -362,6 +371,7 @@ var Autofill = (function () {
      * @param {element} elem - new autofill list option
      */
     function bindTextChangeListener(elem) {
+
         jQuery(elem).find('input').on('change', saveState);
         jQuery(elem).find('input').on('change', toggleMagicButton);
         jQuery(elem).find('input').on('change', validateList);
@@ -426,6 +436,7 @@ var Autofill = (function () {
      * Reset configured autofill tags to the default list
      */
     function resetValues() {
+
         if (window.confirm('Reset Values?')) {
             // erase current list
             autofillOptionsList.innerHTML = '';
@@ -570,6 +581,7 @@ var Autofill = (function () {
     function fetchJSON(url) {
 
         return new Promise(function (resolve, reject) {
+
             jQuery.getJSON(url)
                 .done( /** resolve data */ function (json) {
                     resolve(json.autofill);
@@ -624,12 +636,28 @@ var Autofill = (function () {
     };
 
     /**
+     * Test if phone number
+     * Checked format = 000-0000
+     */
+    function phoneNumberText(text) {
+
+        let phoneRegex = /((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}/g;
+
+        if (phoneRegex.test(text)) {
+            return RegExp.escape(text);
+        }
+        return '\\b' + RegExp.escape(text) + '\\b';
+    }
+
+    /**
      * Replaced matching words/phrases with the corresponding autofill tags
      * @param {array} wordList - array containing all the visible text in the edit area
      * @param {string} regReplace - text string to search for
      */
     function replaceText(wordList, regReplace) {
+
         wordList.forEach(function (n) {
+
             let text = n.nodeValue;
             // iterate through autofill array and replace matches in text
             // replace all instances of 'findMe' with 'autofillTag'
@@ -644,12 +672,12 @@ var Autofill = (function () {
                         if (searchText === '') {
                             continue;
                         }
-                        let findThis = '\\b' + RegExp.escape(findArray[a]) + '\\b';
+                        let findThis = phoneNumberText(findMe);
                         let myRegex = new RegExp(findThis, 'gi');
                         text = text.replace(myRegex, autofillTag);
                     }
                 } else {
-                    let findThis = '\\b' + RegExp.escape(findMe) + '\\b';
+                    let findThis = phoneNumberText(findMe);
                     let myRegex = new RegExp(findThis, 'gi');
                     text = text.replace(myRegex, autofillTag);
                 }
@@ -689,12 +717,12 @@ var Autofill = (function () {
         let regReplace = getFromLocalStorage(); // get stored autofill tags from local storage
 
         if (location.pathname.indexOf('editSite') >= 0) {
-            console.log('edit mode detected');
             siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
             viewerIframe = siteEditorIframe.find('iframe#viewer').contents();
 
             // return array of elements that have children
             myChild = viewerIframe.find('body').children().filter(function (index, value) {
+
                 if (value.children.length !== 0) {
                     return this;
                 }
@@ -903,6 +931,7 @@ var Autofill = (function () {
         let siteSettingsURL = `editSiteSettings.do?webId=${webID}&locale=en_US&pathName=editSettings`;
 
         jQuery.get(siteSettingsURL, function (data) {
+
             let myDiv = document.createElement('div');
             myDiv.innerHTML = data;
             let franchises = myDiv.querySelector('select#associatedFranchises').options;
