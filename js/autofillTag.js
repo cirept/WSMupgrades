@@ -12,7 +12,6 @@ var Autofill = (function () {
         '%STATE%': 'SEARCH_FOR_ME',
         '%ZIP%': 'SEARCH_FOR_ME',
         '%PHONE%': 'SEARCH_FOR_ME',
-        '%NEW_PHONE%': 'SEARCH_FOR_ME',
     };
     defaultValues();
 
@@ -29,7 +28,9 @@ var Autofill = (function () {
     // minimize list element
     let minimizeList = document.createElement('button');
     minimizeList.classList.add('minimizeList');
+    minimizeList.classList.add('minorButtons');
     minimizeList.classList.add('myButts');
+    minimizeList.dataset.feature = 'minimizeList';
     minimizeList.title = 'show list';
     minimizeList.type = 'button';
     minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
@@ -55,6 +56,7 @@ var Autofill = (function () {
     applyAutofills.classList.add('myButts');
     applyAutofills.type = 'button';
     applyAutofills.title = 'apply autofills';
+    applyAutofills.dataset.feature = 'replace';
     applyAutofills.innerHTML = '<i class="fas fa-check fa-lg"></i>';
     applyAutofills.onclick = autofills;
 
@@ -77,12 +79,101 @@ var Autofill = (function () {
     autofillOptionsContainer.appendChild(addButton);
     autofillOptionsContainer.appendChild(autofillDropdown);
 
+    // Remove Highlight Icon
+    let removeHighIco = document.createElement('span');
+    removeHighIco.classList.add('fa-layers');
+    removeHighIco.classList.add('fa-fw');
+    removeHighIco.style.margin = '2px'; // hard code to make it easier to maintain
+    let removeHighIcoBg = document.createElement('i');
+    removeHighIcoBg.classList.add('fa', 'fa-tint');
+    removeHighIcoBg.dataset.faTransform = 'shrink-1';
+    let removeHighIcoFg = document.createElement('i');
+    removeHighIcoFg.classList.add('red1', 'fas', 'fa-ban');
+    removeHighIcoFg.dataset.faTransform = 'grow-8';
+
+    removeHighIco.appendChild(removeHighIcoBg);
+    removeHighIco.appendChild(removeHighIcoFg);
+
+    // hide list Icon
+    let hideIco = document.createElement('span');
+    hideIco.classList.add('fa-layers');
+    hideIco.classList.add('fa-fw');
+    hideIco.style.margin = '2px'; // hard code to make it easier to maintain
+    let hideIcoBg = document.createElement('i');
+    hideIcoBg.classList.add('fa', 'fa-eye');
+    hideIcoBg.dataset.faTransform = 'shrink-1';
+    let hideIcoFg = document.createElement('i');
+    hideIcoFg.classList.add('red1', 'fas', 'fa-ban');
+    hideIcoFg.dataset.faTransform = 'grow-8';
+
+    hideIco.appendChild(hideIcoBg);
+    hideIco.appendChild(hideIcoFg);
+
+    // highlight autofills
+    let highlightAutofills = document.createElement('button');
+    highlightAutofills.classList.add('highlightAutofills');
+    highlightAutofills.classList.add('minorButtons');
+    highlightAutofills.classList.add('myButts');
+    highlightAutofills.dataset.feature = 'highlight';
+    highlightAutofills.title = 'highlight autofills';
+    highlightAutofills.type = 'button';
+    highlightAutofills.innerHTML = '<i class="fas fa-tint fa-lg" data-fa-transform="shrink-3"></i>';
+    highlightAutofills.onclick = highlightButtonActions;
+//    highlightAutofills.onclick = autofills;
+
     wsmEditerTools.appendChild(minimizeList);
     wsmEditerTools.appendChild(applyAutofills);
+    wsmEditerTools.appendChild(highlightAutofills);
     wsmEditerTools.appendChild(autofillOptionsContainer);
+
+    //    minimizeList.onclick = toggleToolPanel;
 
     // attach tool elements to page
     document.querySelector('header.wsmMainHeader').appendChild(wsmEditerTools);
+
+    /**
+     *
+     */
+    function highlightButtonActions() {
+        let eventType = event.currentTarget.dataset.feature;
+
+        toggleBanIcons();
+        autofills(eventType);
+    }
+    //    let contentFrame = jQuery('iframe#cblt_content').contents();
+    //    let siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
+    //    let viewerIframe = siteEditorIframe.find('iframe#viewer'); //.contents();
+    //    console.log(viewerIframe); //.contents();
+    //    let editor = siteEditorIframe.find('#editor-wrapper').find('#editor').contents();
+
+    //    console.log(editor);
+    //    let contentFrame = jQuery('iframe#cblt_content').addClass('helloworld').contents();
+    ////    debugger;
+    //    console.log(contentFrame);
+    //    let siteEditorIframe = jQuery(contentFrame).find('iframe#siteEditorIframe').addClass('helloworld').contents();
+    //    console.log(siteEditorIframe);
+    //    let currentPageFrame = jQuery(siteEditorIframe).find('iframe#viewer').addClass('helloworld');
+    //    console.log(currentPageFrame);
+
+    //    let $contentFrame = jQuery('iframe#cblt_content');
+
+    //    $contentFrame.css({
+    //        'border': '2px solid rgb(255, 192, 203)',
+    //    });
+
+    //    let siteEditorFrame = $contentFrame.contents().find('iframe#siteEditorIframe');
+    // ----------------------------------------
+    // ----------------------------------------
+    //    let siteEditorIframe = jQuery(contentFrame).contents().find('iframe#siteEditorIframe').css({
+    //        'border': '2px solid purple',
+    //    });
+    //
+    //    let editor = siteEditorIframe.find('#editor-wrapper').find('#editor').contents();
+    //
+    //    let pageOutline = jQuery(editor).find('#pageOutline').find('div[template*="generateCardsAndOptions"]');
+    //    debugger;
+    //    let editor = this.siteEditorIframe.find('#editor-wrapper').find('#editor').contents();
+    //    let pageOutline = jQuery(this.editor).find('#pageOutline').find('div[template*="generateCardsAndOptions"]');
 
     /**
      * jQuery functions for animate css
@@ -97,6 +188,16 @@ var Autofill = (function () {
         },
     });
 
+    /**
+     *
+     */
+    function toggleBanIcons() {
+        debugger;
+        console.log('toggle ban icons');
+        //        let elem = event.currentTarget.dataset.feature;
+        //        let parentElem = event.currentTarget.parentElement;
+        //        elem === 'minimizeList' ? : ;
+    }
     /**
      * Will show or hide the tool's panel
      * will also update the button's icon and hover text
@@ -267,7 +368,7 @@ var Autofill = (function () {
     }
 
     /**
-     *
+     * Validates the autofill list options
      */
     function validateList() {
 
@@ -649,6 +750,14 @@ var Autofill = (function () {
         return '\\b' + RegExp.escape(text) + '\\b';
     }
 
+
+    function replaceMarkers(elm) {
+        if (elm) {
+            elm.innerHTML = elm.innerHTML
+                .replace(/~~@(.*?)@~~/g, '<span class="highlightMe">$1</span>');
+        }
+    }
+
     /**
      * Replaced matching words/phrases with the corresponding autofill tags
      * @param {array} wordList - array containing all the visible text in the edit area
@@ -656,9 +765,16 @@ var Autofill = (function () {
      */
     function replaceText(wordList, regReplace) {
 
+        //        var self = this;
+        //        var pElm;
+        //            var text;
+        //            var words;
+        //        var elm;
+
         wordList.forEach(function (n) {
 
             let text = n.nodeValue;
+            //            elm = n.parentElement;
             // iterate through autofill array and replace matches in text
             // replace all instances of 'findMe' with 'autofillTag'
             for (let autofillTag in regReplace) {
@@ -674,15 +790,83 @@ var Autofill = (function () {
                         }
                         let findThis = phoneNumberText(findMe);
                         let myRegex = new RegExp(findThis, 'gi');
-                        text = text.replace(myRegex, autofillTag);
+                        text = text.replace(myRegex, autofillTag); // replace with AUTOFILL Tag
+                        //                        text = text.replace(myRegex, `<span class="highlightMe">${text}</span>`); // replace with highlight span
                     }
                 } else {
                     let findThis = phoneNumberText(findMe);
                     let myRegex = new RegExp(findThis, 'gi');
                     text = text.replace(myRegex, autofillTag);
+                    //                    text = text.replace(myRegex, '~~@$&@~~');
                 }
             }
             n.nodeValue = text;
+
+            //            console.log(pElm);
+            //            console.log(elm);
+            //            if (!pElm) {
+            //                pElm = elm;
+            //            } else if (!pElm.contains(elm)) {
+            //                //                self.replaceMarkers(pElm);
+            //                replaceMarkers(pElm);
+            //                pElm = elm;
+            //            }
+        });
+    }
+
+    /**
+     * Wraps matching words/phrases in a span tag for highlighting possible autofill tags
+     * @param {array} wordList - array containing all the visible text in the edit area
+     * @param {string} regReplace - text string to search for
+     */
+    function highlightText(wordList, regReplace) {
+
+        var self = this;
+        var pElm;
+        //            var text;
+        //            var words;
+        var elm;
+
+        wordList.forEach(function (n) {
+
+            let text = n.nodeValue;
+            elm = n.parentElement;
+            // iterate through autofill array and replace matches in text
+            // replace all instances of 'findMe' with 'autofillTag'
+            for (let autofillTag in regReplace) {
+                let findMe = regReplace[autofillTag];
+                // if split phrases are needed
+                if (findMe.indexOf('``') > -1) {
+                    let findArray = findMe.split('``');
+                    let arrayLength = findArray.length;
+                    for (let a = 0; a < arrayLength; a += 1) {
+                        let searchText = findArray[a].trim();
+                        if (searchText === '') {
+                            continue;
+                        }
+                        let findThis = phoneNumberText(findMe);
+                        let myRegex = new RegExp(findThis, 'gi');
+                        //                                                text = text.replace(myRegex, autofillTag);  // replace with AUTOFILL Tag
+                        text = text.replace(myRegex, `<span class="highlightMe">${text}</span>`); // replace with highlight span
+                    }
+                } else {
+                    let findThis = phoneNumberText(findMe);
+                    let myRegex = new RegExp(findThis, 'gi');
+                    //                                        text = text.replace(myRegex, autofillTag);
+                    text = text.replace(myRegex, '~~@$&@~~');
+                }
+            }
+            n.nodeValue = text;
+
+            console.log(pElm);
+            console.log(elm);
+            if (!pElm) {
+                pElm = elm;
+            } else if (!pElm.contains(elm)) {
+                //                self.replaceMarkers(pElm);
+                replaceMarkers(pElm);
+                pElm = elm;
+            }
         });
     }
 
@@ -691,7 +875,7 @@ var Autofill = (function () {
      * @param {object} baseElem - base element to find and replace text with autofill tags
      * @param {array} regReplace - object array that contains the regExpressions and corresponding autofill tags
      */
-    function useAutofillTags(baseElem, regReplace) {
+    function useAutofillTags(baseElem, regReplace, eventType) {
 
         let wordList;
         let baseLength = baseElem.length;
@@ -699,7 +883,7 @@ var Autofill = (function () {
         for (let z = 0; z < baseLength; z += 1) {
             // get all visible text on page
             wordList = treeWalk(baseElem[z]);
-            replaceText(wordList, regReplace);
+            eventType === 'replace' ? replaceText(wordList, regReplace) : highlightText(wordList, regReplace);
         }
     }
 
@@ -707,14 +891,16 @@ var Autofill = (function () {
      * will walk through edittable portion of WSM window and perform text
      * replacing with data contained in the list area of tool
      */
-    function autofills() {
+    function autofills(eventType) {
 
+        //        console.log(event.currentTarget.dataset.feature);
         const contentFrame = jQuery('iframe#cblt_content').contents();
         let siteEditorIframe;
         let viewerIframe;
         let myChild;
         let recordEditWindow;
         let regReplace = getFromLocalStorage(); // get stored autofill tags from local storage
+        //        let eventType = event.currentTarget.dataset.feature;
 
         if (location.pathname.indexOf('editSite') >= 0) {
             siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
@@ -729,14 +915,14 @@ var Autofill = (function () {
             });
 
             // pass elements with children as base element for autofill replacing
-            useAutofillTags(myChild, regReplace);
+            useAutofillTags(myChild, regReplace, eventType);
 
         } else {
 
             recordEditWindow = contentFrame.find('div.main-wrap').find('.input-field').find('div[data-which-field="copy"]');
 
             // pass elements with children as base element for autofill replacing
-            useAutofillTags(recordEditWindow, regReplace);
+            useAutofillTags(recordEditWindow, regReplace, eventType);
 
             // change focus between text area to trigger text saving.
             let recordLendth = recordEditWindow.length;
@@ -768,7 +954,7 @@ var Autofill = (function () {
 #toolMessageDisplay {
     position: absolute;
     top: 10px;
-    left: 120px;
+    left: 130px;
     color: red;
 }
 
@@ -801,10 +987,13 @@ var Autofill = (function () {
     background: #333;
 }
 
-.minimizeList {
+.minorButtons {
     position: relative;
-    float: right;
     padding: 5px 13px;
+}
+
+.minimizeList {
+    float: right;
 }
 
 #defaultReset {
@@ -907,6 +1096,11 @@ var Autofill = (function () {
 .myError {
     border: 1px solid red;
 }
+
+.red1 {
+    color: rgb(255, 107, 107);
+}
+
 `;
         const myStyles = document.createElement('style');
         myStyles.type = 'text/css';
