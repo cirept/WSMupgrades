@@ -25,16 +25,23 @@ var Autofill = (function () {
     autofillOptionsContainer.classList.add('autofillOptionsContainer');
     autofillOptionsContainer.classList.add('hide');
 
+    // Show list button Icon
+    let showIco = document.createElement('i');
+    showIco.classList.add('fas', 'fa-eye', 'fa-lg', 'showlist');
+
     // minimize list element
-    let minimizeList = document.createElement('button');
-    minimizeList.classList.add('minimizeList');
-    minimizeList.classList.add('minorButtons');
-    minimizeList.classList.add('myButts');
-    minimizeList.dataset.feature = 'minimizeList';
-    minimizeList.title = 'show list';
-    minimizeList.type = 'button';
-    minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
-    minimizeList.onclick = toggleToolPanel;
+    let minimizeList_button = document.createElement('button');
+    minimizeList_button.classList.add('minimizeList');
+    minimizeList_button.classList.add('minorButtons');
+    minimizeList_button.classList.add('myButts');
+    minimizeList_button.dataset.feature = 'minimizeList';
+    minimizeList_button.title = 'hide/show list';
+    minimizeList_button.type = 'button';
+    minimizeList_button.onclick = maximizeListButtonActions;
+    // attach icon
+    minimizeList_button.appendChild(showIco);
+    //    minimizeList_button.onclick = toggleToolPanel;
+//    minimizeList_button.onclick = maximizeListButtonActions;
 
     let autofillOptionsList = document.createElement('ul');
     autofillOptionsList.id = 'autofillOptions';
@@ -44,45 +51,61 @@ var Autofill = (function () {
     messageDisplay.id = 'toolMessageDisplay';
     messageDisplay.textContent = `Autofill tag text replacer tool v${GM_info.script.version}`;
 
-    let defaultReset = document.createElement('button');
-    defaultReset.id = 'defaultReset';
-    defaultReset.classList.add('myButts');
-    defaultReset.title = 'Reset Values';
-    defaultReset.innerHTML = '<i class="fas fa-redo fa-lg"></i>';
-    defaultReset.onclick = resetValues;
+    // Reset button Icon
+    let resetIco = document.createElement('i');
+    resetIco.classList.add('fas', 'fa-redo', 'fa-lg');
 
-    let applyAutofills = document.createElement('button');
-    applyAutofills.id = 'applyAutofills';
-    applyAutofills.classList.add('myButts');
-    applyAutofills.type = 'button';
-    applyAutofills.title = 'apply autofills';
-    applyAutofills.dataset.feature = 'replace';
-    applyAutofills.innerHTML = '<i class="fas fa-check fa-lg"></i>';
-    applyAutofills.onclick = autofills;
+    let defaultReset_button = document.createElement('button');
+    defaultReset_button.id = 'defaultReset';
+    defaultReset_button.classList.add('myButts');
+    defaultReset_button.title = 'Reset Values';
+    defaultReset_button.onclick = resetValues;
+    // attach button icon
+    defaultReset_button.appendChild(resetIco);
+    //    defaultReset_button.onclick = reset;
 
-    let addButton = document.createElement('button');
-    addButton.id = 'addAutofill';
-    addButton.classList.add('myButts');
-    addButton.value = 'addAutofill';
-    addButton.title = 'Add Autofill';
-    addButton.innerHTML = '<i class="fas fa-plus fa-lg"></i>';
+    // Apply button Icon
+    let checkIco = document.createElement('i');
+    checkIco.classList.add('fas', 'fa-check', 'fa-lg');
 
-    let autofillDropdown = document.createElement('ul');
-    autofillDropdown.tabIndex = '4';
-    autofillDropdown.classList.add('autofill-dropdown');
-    autofillDropdown.classList.add('hide');
-    autofillDropdown.onblur = hideMe;
+    let applyAutofills_button = document.createElement('button');
+    applyAutofills_button.id = 'applyAutofills';
+    applyAutofills_button.classList.add('myButts');
+    applyAutofills_button.type = 'button';
+    applyAutofills_button.title = 'apply autofills';
+    applyAutofills_button.dataset.feature = 'replace';
+    applyAutofills_button.onclick = autofills;
+    // attach button icon
+    applyAutofills_button.appendChild(checkIco);
+
+    // Add button Icon
+    let plusIco = document.createElement('i');
+    plusIco.classList.add('fas', 'fa-plus', 'fa-lg');
+
+    let add_button = document.createElement('button');
+    add_button.id = 'addAutofill';
+    add_button.classList.add('myButts');
+    add_button.value = 'addAutofill';
+    add_button.title = 'Add Autofill';
+
+    // attach button icon
+    add_button.appendChild(plusIco);
+
+    let autofill_dropdown = document.createElement('ul');
+    autofill_dropdown.tabIndex = '4';
+    autofill_dropdown.classList.add('autofill-dropdown');
+    autofill_dropdown.classList.add('hide');
+    autofill_dropdown.onblur = hideMe;
 
     autofillOptionsContainer.appendChild(messageDisplay);
     autofillOptionsContainer.appendChild(autofillOptionsList);
-    autofillOptionsContainer.appendChild(defaultReset);
-    autofillOptionsContainer.appendChild(addButton);
-    autofillOptionsContainer.appendChild(autofillDropdown);
+    autofillOptionsContainer.appendChild(defaultReset_button);
+    autofillOptionsContainer.appendChild(add_button);
+    autofillOptionsContainer.appendChild(autofill_dropdown);
 
     // Remove Highlight Icon
     let removeHighIco = document.createElement('span');
-    removeHighIco.classList.add('fa-layers');
-    removeHighIco.classList.add('fa-fw');
+    removeHighIco.classList.add('fa-layers', 'fa-fw', 'removeHighlight');
     removeHighIco.style.margin = '2px'; // hard code to make it easier to maintain
     let removeHighIcoBg = document.createElement('i');
     removeHighIcoBg.classList.add('fa', 'fa-tint');
@@ -94,10 +117,9 @@ var Autofill = (function () {
     removeHighIco.appendChild(removeHighIcoBg);
     removeHighIco.appendChild(removeHighIcoFg);
 
-    // hide list Icon
+    // Hide list Icon
     let hideIco = document.createElement('span');
-    hideIco.classList.add('fa-layers');
-    hideIco.classList.add('fa-fw');
+    hideIco.classList.add('fa-layers', 'fa-fw', 'hideList');
     hideIco.style.margin = '2px'; // hard code to make it easier to maintain
     let hideIcoBg = document.createElement('i');
     hideIcoBg.classList.add('fa', 'fa-eye');
@@ -109,36 +131,76 @@ var Autofill = (function () {
     hideIco.appendChild(hideIcoBg);
     hideIco.appendChild(hideIcoFg);
 
-    // highlight autofills
-    let highlightAutofills = document.createElement('button');
-    highlightAutofills.classList.add('highlightAutofills');
-    highlightAutofills.classList.add('minorButtons');
-    highlightAutofills.classList.add('myButts');
-    highlightAutofills.dataset.feature = 'highlight';
-    highlightAutofills.title = 'highlight autofills';
-    highlightAutofills.type = 'button';
-    highlightAutofills.innerHTML = '<i class="fas fa-tint fa-lg" data-fa-transform="shrink-3"></i>';
-    highlightAutofills.onclick = highlightButtonActions;
-//    highlightAutofills.onclick = autofills;
+    // Add button Icon
+    let dropletIco = document.createElement('i');
+    dropletIco.classList.add('fas', 'fa-tint', 'fa-lg');
+    dropletIco.setAttribute('data-fa-transform', 'shrink-3');
 
-    wsmEditerTools.appendChild(minimizeList);
-    wsmEditerTools.appendChild(applyAutofills);
-    wsmEditerTools.appendChild(highlightAutofills);
+    // highlight autofills
+    let highlightAutofills_button = document.createElement('button');
+    highlightAutofills_button.classList.add('highlightAutofills');
+    highlightAutofills_button.classList.add('minorButtons');
+    highlightAutofills_button.classList.add('myButts');
+    highlightAutofills_button.dataset.feature = 'highlight';
+    highlightAutofills_button.title = 'highlight autofills';
+    highlightAutofills_button.type = 'button';
+    highlightAutofills_button.onclick = highlightButtonActions;
+
+    // attach button icon
+    highlightAutofills_button.appendChild(dropletIco);
+    //    highlightAutofills_button.onclick = autofills;
+
+    wsmEditerTools.appendChild(minimizeList_button);
+    wsmEditerTools.appendChild(applyAutofills_button);
+    wsmEditerTools.appendChild(highlightAutofills_button);
     wsmEditerTools.appendChild(autofillOptionsContainer);
 
-    //    minimizeList.onclick = toggleToolPanel;
+    //    minimizeList_button.onclick = toggleToolPanel;
 
     // attach tool elements to page
     document.querySelector('header.wsmMainHeader').appendChild(wsmEditerTools);
 
     /**
-     *
+     * Function called after 'highlight autofill' button is clicked
+     * 1. Will Change the button icon
+     * 2. Highlight all autofills on the page
      */
     function highlightButtonActions() {
         let eventType = event.currentTarget.dataset.feature;
+        //        console.log(eventType);
 
-        toggleBanIcons();
+        toggleBanIcons(eventType);
         autofills(eventType);
+    }
+
+    /**
+     * 1. Will Change the button icon
+     * 2. Highlight all autofills on the page
+     */
+    function minimizeListButtonActions() {
+        let eventType = event.currentTarget.dataset.feature;
+        //        console.log(eventType);
+
+        toggleBanIcons(eventType);
+        /* show main tool panel */
+        autofillOptionsContainer.classList.toggle('hide');
+        //        autofills(eventType);
+        minimizeList_button.onclick = maximizeListButtonActions;
+    }
+
+    /**
+     * 1. Will remove the 'cancel' image from the button icon
+     * 2. Highlight all autofills on the page
+     */
+    function maximizeListButtonActions() {
+        let eventType = event.currentTarget.dataset.feature;
+        //        console.log(eventType);
+
+        toggleBanIcons(eventType);
+        /* show main tool panel */
+        autofillOptionsContainer.classList.toggle('hide');
+        //        autofills(eventType);
+        minimizeList_button.onclick = minimizeListButtonActions;
     }
     //    let contentFrame = jQuery('iframe#cblt_content').contents();
     //    let siteEditorIframe = contentFrame.find('iframe#siteEditorIframe').contents();
@@ -191,12 +253,21 @@ var Autofill = (function () {
     /**
      *
      */
-    function toggleBanIcons() {
-        debugger;
-        console.log('toggle ban icons');
-        //        let elem = event.currentTarget.dataset.feature;
-        //        let parentElem = event.currentTarget.parentElement;
-        //        elem === 'minimizeList' ? : ;
+    function toggleBanIcons(eventType) {
+        //        debugger;
+        //        console.log('toggle ban icons');
+        //                let elem = event.currentTarget.dataset.feature;
+        //                let parentElem = event.currentTarget.parentElement;
+        //                elem === 'minimizeList' ? : ;
+        console.log(eventType);
+        switch (eventType) {
+            case 'highlight':
+                highlightAutofills_button.innerHTML = removeHighIco.outerHTML;
+                break;
+            case 'minimizeList':
+                minimizeList_button.innerHTML = hideIco.outerHTML;
+                break;
+        }
     }
     /**
      * Will show or hide the tool's panel
@@ -204,14 +275,16 @@ var Autofill = (function () {
      */
     function toggleToolPanel() {
 
+        /* show main tool panel */
         autofillOptionsContainer.classList.toggle('hide');
 
+        /* change icon depending on current state */
         if (autofillOptionsContainer.classList.contains('hide')) {
-            minimizeList.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
-            minimizeList.title = 'show list';
+            minimizeList_button.innerHTML = '<i class="fas fa-eye fa-lg"></i>';
+            minimizeList_button.title = 'show list';
         } else {
-            minimizeList.innerHTML = '<i class="fas fa-eye-slash fa-lg"></i>';
-            minimizeList.title = 'hide list';
+            minimizeList_button.innerHTML = '<i class="fas fa-eye-slash fa-lg"></i>';
+            minimizeList_button.title = 'hide list';
         }
     }
 
@@ -224,8 +297,8 @@ var Autofill = (function () {
         if (!event.target.classList.contains('hide')) {
             event.target.classList.add('hide');
         }
-        if (addButton.classList.contains('disabled')) {
-            addButton.classList.remove('disabled');
+        if (add_button.classList.contains('disabled')) {
+            add_button.classList.remove('disabled');
         }
     }
 
@@ -325,7 +398,7 @@ var Autofill = (function () {
             // do not save until input  empty
             if (myRegex === '') {
                 autofillOptionsList.children[z].classList.add('myError');
-                applyAutofills.classList.add('disabled');
+                applyAutofills_button.classList.add('disabled');
                 messageDisplay.textContent = 'Please enter a word to search for.';
                 continue;
             } else {
@@ -349,7 +422,7 @@ var Autofill = (function () {
     function removeDisable(elem) {
 
         let autofillTag = elem.querySelector('.autofillTag').textContent;
-        let dropDown = autofillDropdown.querySelectorAll('.disabled');
+        let dropDown = autofill_dropdown.querySelectorAll('.disabled');
         let dropDownLength = dropDown.length;
 
         for (let z = 0; z < dropDownLength; z += 1) {
@@ -364,7 +437,7 @@ var Autofill = (function () {
      */
     function toggleMagicButton() {
 
-        autofillOptionsList.getElementsByClassName('myError').length >= 1 ? applyAutofills.classList.add('disabled') : applyAutofills.classList.remove('disabled');
+        autofillOptionsList.getElementsByClassName('myError').length >= 1 ? applyAutofills_button.classList.add('disabled') : applyAutofills_button.classList.remove('disabled');
     }
 
     /**
@@ -376,8 +449,8 @@ var Autofill = (function () {
             messageDisplay.textContent = 'Please enter a word to search for.';
             $('#toolMessageDisplay').animateCss('flash');
         } else {
-            if (applyAutofills.classList.contains('disabled')) {
-                applyAutofills.classList.remove('disabled');
+            if (applyAutofills_button.classList.contains('disabled')) {
+                applyAutofills_button.classList.remove('disabled');
             }
 
             if (messageDisplay.textContent !== '') {
@@ -534,6 +607,21 @@ var Autofill = (function () {
     }
 
     /**
+     * TEST RESET FUNCTION
+     */
+    function reset() {
+        let callingElement =
+            resetValues();
+        toggleIcon();
+    }
+
+    /**
+     *
+     */
+    function toggleIcon() {
+
+    }
+    /**
      * Reset configured autofill tags to the default list
      */
     function resetValues() {
@@ -622,7 +710,7 @@ var Autofill = (function () {
                 myListItem.classList.add('disabled');
             }
             // add the list element to the 'drop down' list
-            autofillDropdown.appendChild(myListItem);
+            autofill_dropdown.appendChild(myListItem);
             // bind listener to 'li' item
             createAutofillDropdownMenu(myListItem);
             // attach new 'li' to main list
@@ -664,13 +752,13 @@ var Autofill = (function () {
      * Bind onclick function dynamically depending on autofill JSON load
      * @param {bool} bool - boolean variable that will determine what method will be used
      */
-    function addButtonEventListener(bool) {
+    function add_buttonEventListener(bool) {
 
         if (bool) {
             return function () {
                 this.classList.add('disabled');
-                autofillDropdown.classList.remove('hide');
-                autofillDropdown.focus();
+                autofill_dropdown.classList.remove('hide');
+                autofill_dropdown.focus();
             };
         }
         return bindAddAutofill();
@@ -700,13 +788,13 @@ var Autofill = (function () {
 
         fetchJSON(myURL).then((data) => {
             console.log('autofill : autofill list loaded.');
-            addButton.onclick = addButtonEventListener(true);
+            add_button.onclick = add_buttonEventListener(true);
             // build out drop down menu
             buildAutofillList(data);
         }).catch((error) => {
             console.log('autofill : autofill list failed to load, reverting to manual autofill entry method');
             console.log(error);
-            addButton.onclick = addButtonEventListener(false);
+            add_button.onclick = add_buttonEventListener(false);
         });
     }
 
@@ -858,8 +946,8 @@ var Autofill = (function () {
             }
             n.nodeValue = text;
 
-            console.log(pElm);
-            console.log(elm);
+            //            console.log(pElm);
+            //            console.log(elm);
             if (!pElm) {
                 pElm = elm;
             } else if (!pElm.contains(elm)) {
